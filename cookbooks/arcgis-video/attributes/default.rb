@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-video
 # Attributes:: default
 #
-# Copyright 2024 Esri
+# Copyright 2024-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,6 +96,10 @@ default['arcgis']['video_server'].tap do |video_server|
     video_server['log_dir'] = 'C:\\arcgisvideoserver\\logs'
 
     case node['arcgis']['version']
+    when '12.0'
+      video_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                    'ArcGIS_Video_Server_Windows_120_197689.exe').gsub('/', '\\')
+      video_server['product_code'] = '{A08F57C3-0681-4D57-AEE8-51BB55ABA32D}'
     when '11.5'
       video_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                     'ArcGIS_Video_Server_Windows_115_195409.exe').gsub('/', '\\')
@@ -148,9 +152,12 @@ default['arcgis']['video_server'].tap do |video_server|
                                           'usr', 'logs')
 
     case node['arcgis']['version']
+    when '12.0'
+      video_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                  'ArcGIS_Video_Server_Linux_120_197846.tar.gz')
     when '11.5'
       video_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
-                                                  'ArcGIS_Video_Server_Linux_115_195485.tar.gz')
+                                                  'ArcGIS_Video_Server_Linux_115_196647.tar.gz')
     when '11.4'
       video_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                   'ArcGIS_Video_Server_Linux_114_192993.tar.gz')

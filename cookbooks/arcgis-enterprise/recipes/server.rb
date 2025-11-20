@@ -67,6 +67,8 @@ template ::File.join(node['arcgis']['server']['install_dir'],
                      node['arcgis']['server']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['server']['hostname']} )
   notifies :stop, 'arcgis_enterprise_server[Stop ArcGIS Server]', :immediately
   notifies :delete, 'directory[Delete ArcGIS Server certificates directory]', :immediately
@@ -145,6 +147,7 @@ arcgis_enterprise_server 'Set ArcGIS Server system properties' do
   password node['arcgis']['server']['admin_password']
   system_properties node['arcgis']['server']['system_properties']
   services_dir_enabled node['arcgis']['server']['services_dir_enabled']
+  callback_functions_enabled node['arcgis']['server']['callback_functions_enabled']
   retries 5
   retry_delay 30
   action :set_system_properties

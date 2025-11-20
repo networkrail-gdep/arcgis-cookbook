@@ -20,7 +20,7 @@
 unified_mode true
 
 actions :system, :unpack, :install, :uninstall, :update_account, :stop, :start,
-        :configure_autostart, :authorize, :create_site, :join_site,
+        :configure_autostart, :authorize, :create_site, :join_site, :delete_site,
         :join_cluster, :configure_https, :register_data_item, :register_database,
         :set_identity_store, :assign_privileges, :set_machine_properties,
         :stop_machine, :unregister_machine, :unregister_machines,
@@ -67,6 +67,7 @@ attribute :connection_string, :kind_of => String
 attribute :is_managed, :kind_of => [TrueClass, FalseClass], :default => false
 attribute :system_properties, :kind_of => Hash, :default => {}
 attribute :services_dir_enabled, :kind_of => [TrueClass, FalseClass], :default => true
+attribute :callback_functions_enabled, :kind_of => [TrueClass, FalseClass], :default => true
 attribute :log_level, :kind_of => String, :default => 'WARNING'
 attribute :log_dir, :kind_of => String
 attribute :max_log_file_age, :kind_of => Integer, :default => 90

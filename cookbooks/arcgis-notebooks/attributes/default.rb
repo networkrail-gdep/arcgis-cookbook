@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-notebooks
 # Attributes:: default
 #
-# Copyright 2023-2024 Esri
+# Copyright 2023-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ default['arcgis']['notebook_server'].tap do |notebook_server|
   notebook_server['install_system_requirements'] = true
   notebook_server['install_samples_data'] = false
   notebook_server['install_docker'] = true
+  notebook_server['docker_version'] = '28.5.2'
   
   notebook_server['setup_archive'] = ''
 
@@ -150,6 +151,14 @@ default['arcgis']['notebook_server'].tap do |notebook_server|
     notebook_server['patches'] = []
 
     case node['arcgis']['version']
+    when '12.0'
+      notebook_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                     'ArcGIS_Notebook_Server_Linux_120_197845.tar.gz')
+      notebook_server['standard_images'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                       'ArcGIS_Notebook_Docker_Standard_120_197686.tar.gz')
+      notebook_server['advanced_images'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                       'ArcGIS_Notebook_Docker_Advanced_120_197687.tar.gz')
+      notebook_server['data_setup_archive'] = nil
     when '11.5'
       notebook_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                      'ArcGIS_Notebook_Server_Linux_115_195484.tar.gz')

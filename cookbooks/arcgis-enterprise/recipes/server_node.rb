@@ -84,6 +84,8 @@ template ::File.join(node['arcgis']['server']['install_dir'],
                      node['arcgis']['server']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['server']['hostname']} )
   notifies :stop, 'arcgis_enterprise_server[Stop ArcGIS Server]', :immediately
   notifies :delete, 'directory[Delete ArcGIS Server certificates directory]', :immediately

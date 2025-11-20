@@ -358,8 +358,6 @@ module ArcGIS
       validate_response(send_request(request))
 
       url
-    rescue Exception
-      @portal_url + '/portaladmin/security/sslCertificates'
     end
 
     def unregister_machine(machine_name)
@@ -445,11 +443,7 @@ module ArcGIS
       JSON.parse(response.body)
     end
 
-    def server_ssl_certificate
-      ssl_certificates['webServerCertificateAlias']
-    end
-
-    def set_server_ssl_certificate(cert_alias)
+    def set_server_ssl_certificate(cert_alias, hsts_enabled = false)
       certs = ssl_certificates
 
       request = Net::HTTP::Post.new(URI.parse(ssl_certificates_url + "/update").request_uri)
@@ -457,8 +451,6 @@ module ArcGIS
       request.add_field('Referer', 'referer')
 
       token = generate_token(@generate_token_url)
-
-      hsts_enabled = certs['HSTSEnabled'].nil? ? false : certs['HSTSEnabled']
 
       request.set_form_data(
         'webServerCertificateAlias' => cert_alias,
@@ -643,22 +635,93 @@ module ArcGIS
       validate_response(response)
     end
 
-    def set_allssl(allssl)
+    def update_org_info(org_info)
       token = generate_token(@generate_token_url)
 
       request = Net::HTTP::Post.new(URI.parse(
         @portal_url + '/sharing/rest/portals/self/update').request_uri)
       request.add_field('Referer', 'referer')
 
-      request.set_form_data('token' => token,
-                            'allSSL' => allssl,
-                            'f' => 'json')
+      form_data = {
+        'token' => token, 
+        'f' => 'json'
+      }
+
+      for key, value in org_info
+        if value != nil
+          form_data[key] = value
+        end
+      end
+
+      request.set_form_data(form_data)
 
       response = send_request(request)
 
       validate_response(response)
 
       JSON.parse(response.body)
+    end
+
+    def update_org_settings(org_settings)
+      # Return if the org_settings hash is empty or all the values are nil
+      return if org_settings.empty? || org_settings.values.all?(&:nil?)
+
+      token = generate_token(@generate_token_url)
+
+      request = Net::HTTP::Post.new(URI.parse(
+        @portal_url + '/sharing/rest/portals/self/settings/update').request_uri)
+      request.add_field('Referer', 'referer')
+
+      form_data = {
+        'token' => token, 
+        'f' => 'json'
+      }
+
+      for key, value in org_settings
+        if value != nil
+          if value.is_a?(Hash) || value.is_a?(Array)
+            form_data[key] = value.to_json
+          else
+            form_data[key] = value
+          end
+        end
+      end
+
+      request.set_form_data(form_data)
+
+      response = send_request(request)
+
+      validate_response(response)
+
+      JSON.parse(response.body)
+    end
+
+    def update_security_policy(security_policy)
+      # Return if the security_policy hash is empty or all the values are nil
+      return if security_policy.empty? || security_policy.values.all?(&:nil?)
+
+      token = generate_token(@generate_token_url)
+
+      request = Net::HTTP::Post.new(URI.parse(
+        @portal_url + '/sharing/rest/portals/self/securityPolicy/update').request_uri)
+      request.add_field('Referer', 'referer')
+
+      form_data = {
+        'token' => token, 
+        'f' => 'json'
+      }
+
+      for key, value in security_policy
+        if value != nil
+          form_data[key] = value
+        end
+      end
+      
+      request.set_form_data(form_data)
+
+      response = send_request(request)
+
+      validate_response(response)
     end
 
     def webadaptors_shared_key

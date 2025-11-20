@@ -438,6 +438,28 @@ action :join_cluster do
   end
 end
 
+action :delete_site do
+  begin
+    admin_client = ArcGIS::ServerAdminClient.new(@new_resource.server_url,
+                                                  @new_resource.username,
+                                                  @new_resource.password)
+    admin_client.wait_until_available
+
+    if admin_client.site_exist?
+      Chef::Log.info('Deleting ArcGIS Server site...')
+
+      admin_client.delete_site
+
+      new_resource.updated_by_last_action(true)
+    else
+      Chef::Log.info('ArcGIS Server site does not exist.')
+    end
+  rescue Exception => e
+    Chef::Log.error "Failed to delete ArcGIS Server site. " + e.message
+    raise e
+  end
+end
+
 action :set_system_properties do
   begin
     admin_client = ArcGIS::ServerAdminClient.new(@new_resource.server_url,
@@ -456,7 +478,10 @@ action :set_system_properties do
     end
 
     Chef::Log.info('Updating ArcGIS Server services directory properties...')
-    admin_client.update_services_directory_properties(@new_resource.services_dir_enabled)
+    admin_client.update_services_directory_properties(
+      @new_resource.services_dir_enabled,
+      @new_resource.callback_functions_enabled
+    )
     Chef::Log.info 'ArcGIS Server services directory properties were updated.'
   rescue Exception => e
     if e.message.include?('Failed to clear REST cache on one or more server machines.')

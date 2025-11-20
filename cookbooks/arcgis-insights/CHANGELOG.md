@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of the arcgis-insights cookbook.
 
+## 5.3.0
+
+- Added support for ArcGIS Insights 2025.1.
+
 ## 5.2.0
 
 - Added support for ArcGIS Insights 2024.2.

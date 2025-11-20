@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-workflow-manager
 # Attributes:: server
 #
-# Copyright 2024 Esri
+# Copyright 2024-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,6 +42,11 @@ default['arcgis']['workflow_manager_server'].tap do |server|
                                   'ArcGISWorkflowManagerServer', 'Setup.exe')
 
     case node['arcgis']['version']
+    when '12.0'
+      server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                            'ArcGIS_Workflow_Manager_Server_120_197690.exe').gsub('/', '\\')
+      server['product_code'] = '{3E93DBCD-2ECB-4E88-BD1E-3456D5FAD070}'
+      server['patch_registry'] ='SOFTWARE\\ESRI\\workflowmanager\\Server\\12.0\\Updates'
     when '11.5'
       server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                             'ArcGIS_Workflow_Manager_Server_115_195410.exe').gsub('/', '\\')
@@ -89,6 +94,9 @@ default['arcgis']['workflow_manager_server'].tap do |server|
                                   'ArcGISWorkflowManagerServer', 'Setup.sh')
 
     case node['arcgis']['version']
+    when '12.0'
+      server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                            'ArcGIS_Workflow_Manager_Server_120_197847.tar.gz')
     when '11.5'
       server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                             'ArcGIS_Workflow_Manager_Server_115_195486.tar.gz')

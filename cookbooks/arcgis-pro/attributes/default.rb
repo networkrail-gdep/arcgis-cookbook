@@ -21,7 +21,7 @@ include_attribute 'arcgis-repository'
 default['arcgis']['pro'].tap do |pro|
   case node['platform']
   when 'windows'
-    pro['version'] = '3.5'
+    pro['version'] = '3.6'
 
     pro['setup'] = ::File.join(node['arcgis']['repository']['setups'],
                                'ArcGIS Pro ' + node['arcgis']['pro']['version'],
@@ -46,6 +46,10 @@ default['arcgis']['pro'].tap do |pro|
     default['ms_dotnet']['version'] = '8.0.11'
 
     case node['arcgis']['pro']['version']
+    when '3.6'
+      pro['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                         'ArcGISPro_36_197382.exe').gsub('/', '\\')
+      pro['product_code'] = '{302EF432-616C-4281-94F6-D53E290D0F77}' # Replace with actual product code when available
     when '3.5'
       pro['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                          'ArcGISPro_35_195271.exe').gsub('/', '\\')
@@ -82,7 +86,7 @@ default['arcgis']['pro'].tap do |pro|
       Chef::Log.warn 'Unsupported ArcGIS Pro version'
     end
 
-    pro['authorization_file_version'] = '11.5'
+    pro['authorization_file_version'] = '12.0'
 
     case node['ms_dotnet']['version']
     when '8.0.11'

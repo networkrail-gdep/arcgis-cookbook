@@ -4,11 +4,11 @@ maintainer_email 'contracts@esri.com'
 license          'Apache 2.0'
 description      'Installs and configures ArcGIS Insights'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '5.2.0'
+version          '5.3.0'
 chef_version     '>= 15.3' if defined? chef_version
 
-depends          'arcgis-enterprise', '~> 5.2'
-depends          'arcgis-repository', '~> 5.2'
+depends          'arcgis-enterprise', '~> 5.3'
+depends          'arcgis-repository', '~> 5.3'
 
 supports         'windows'
 supports         'ubuntu'

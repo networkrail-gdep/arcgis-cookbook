@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-geoevent
 # Attributes:: default
 #
-# Copyright 2022-2024 Esri
+# Copyright 2022-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,12 +45,16 @@ default['arcgis']['geoevent'].tap do |geoevent|
     geoevent['lp-setup'] = 'C:\\ArcGIS\\GeoEvent\\SetupFiles\\setup.msi'
 
     case node['arcgis']['version']
+    when '12.0'
+      geoevent['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                              'ArcGIS_GeoEvent_Server_120_197742.exe').gsub('/', '\\')
+      geoevent['product_code'] = '{92BEF07A-3250-4276-BCDE-1D66F26160CE}'
+      geoevent['patch_registry'] ='SOFTWARE\ESRI\GeoEvent12.0\Server\Updates'
     when '11.5'
       geoevent['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                               'ArcGIS_GeoEvent_Server_115_195396.exe').gsub('/', '\\')
       geoevent['product_code'] = '{C8BA52B6-38E6-484E-BEC6-61A28EBC6CB8}'
       geoevent['patch_registry'] ='SOFTWARE\ESRI\GeoEvent11.5\Server\Updates'
-
     when '11.4'
       geoevent['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                               'ArcGIS_GeoEvent_Server_114_192949.exe').gsub('/', '\\')
@@ -91,6 +95,9 @@ default['arcgis']['geoevent'].tap do |geoevent|
     geoevent['lp-setup'] = '/arcgis/geo-event-cdLP/Language-Pack-Setup.sh'
 
     case node['arcgis']['version']
+    when '12.0'
+      geoevent['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                              'ArcGIS_GeoEvent_Server_120_197836.tar.gz')
     when '11.5'
       geoevent['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                               'ArcGIS_GeoEvent_Server_115_195474.tar.gz')

@@ -34,6 +34,8 @@ template ::File.join(node['arcgis']['video_server']['install_dir'],
                      node['arcgis']['video_server']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['video_server']['hostname']} )
   notifies :stop, 'arcgis_video_server[Stop ArcGIS Video Server]', :immediately
   notifies :delete, 'directory[Delete ArcGIS Video Server certificates directory]', :immediately

@@ -2,35 +2,39 @@
 
 This file is used to list changes made in each version of the arcgis-notebooks cookbook.
 
-# 5.2.0
+## 5.3.0
+
+- Added support for ArcGIS Notebook Server 12.0.
+
+## 5.2.0
 
 - Added support for ArcGIS Notebook Server 11.5.
 
-# 5.1.0
+## 5.1.0
 
 - Added support for ArcGIS Notebook Server 11.4.
 
-# 5.0.0
+## 5.0.0
 
 - Added support for ArcGIS Notebook Server 11.3.
 
-# 4.2.0
+## 4.2.0
 
 - Added support for ArcGIS Notebook Server 11.2.
 
-# 4.1.0
+## 4.1.0
 
 - Added support for ArcGIS Notebook Server 11.1.
 
-# 4.0.0
+## 4.0.0
 
 - Added support for ArcGIS Notebook Server 11.0.
 
-# 3.8.0
+## 3.8.0
 
 - Added support for ArcGIS Notebook Server 10.9.1.
 
-# 3.7.0
+## 3.7.0
 
 - Added support for ArcGIS Notebook Server 10.9.
 - Added iptables and samples_data recipes.
@@ -40,17 +44,15 @@ This file is used to list changes made in each version of the arcgis-notebooks c
 - Added support for setting system properties.
 - Added support for config store in DynamoDB/S3 AWS storage services.
 
-# 3.6.1 
+## 3.6.1
 
 - Added support for Chef Client 15.
 
-# 3.6.0
--------
+## 3.6.0
 
 - Added support for ArcGIS Notebook Server 10.8.1.
 - Added unregister_machine recipe.
 
-# 3.5.0
--------
+## 3.5.0
 
 - Initial release of the cookbook.

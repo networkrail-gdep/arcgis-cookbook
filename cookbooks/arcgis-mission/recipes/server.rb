@@ -34,6 +34,8 @@ template ::File.join(node['arcgis']['mission_server']['install_dir'],
                      node['arcgis']['mission_server']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['mission_server']['hostname']} )
   notifies :stop, 'arcgis_mission_server[Stop ArcGIS Mission Server]', :immediately
   notifies :delete, 'directory[Delete ArcGIS Mission Server certificates directory]', :immediately

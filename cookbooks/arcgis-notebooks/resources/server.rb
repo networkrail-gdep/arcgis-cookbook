@@ -423,12 +423,24 @@ action :unregister_machine do
 
   admin_client.wait_until_available
 
-  Chef::Log.info('Unregistering server machine...')
+  if admin_client.site_exist?
+    Chef::Log.info('Unregistering ArcGIS Web Adaptors referencing the machine...')
+    
+    web_adaptors = admin_client.web_adaptors
 
-  machine_name = @new_resource.hostname
-  machine_name = node['fqdn'] if machine_name.empty?
+    web_adaptors.each do |web_adaptor|
+      if web_adaptor['machineIP'] == node['ipaddress']
+        admin_client.unregister_web_adaptor(web_adaptor['id'])
+      end
+    end
 
-  admin_client.unregister_machine(machine_name)
+    Chef::Log.info('Unregistering server machine...')
+
+    machine_name = @new_resource.hostname
+    machine_name = node['fqdn'] if machine_name.empty?
+
+    admin_client.unregister_machine(machine_name)
+  end
 end
 
 action :unregister_web_adaptors do

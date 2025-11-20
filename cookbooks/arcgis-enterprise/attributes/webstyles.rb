@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-enterprise
 # Attributes:: webstyles
 #
-# Copyright 2023-2024 Esri
+# Copyright 2023-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ default['arcgis']['webstyles'].tap do |webstyles|
                                      'ArcGISWebStyles', 'Setup.exe').tr('/', '\\')
 
     case node['arcgis']['version']
+    when '12.0'
+      webstyles['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                               'Portal_for_ArcGIS_Web_Styles_Windows_120_197708.exe').tr('/', '\\')
+      webstyles['product_code'] = '{A31A5861-3957-46E3-9166-56D297C0309E}'
     when '11.5'
       webstyles['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                'Portal_for_ArcGIS_Web_Styles_Windows_115_195369.exe').tr('/', '\\')
@@ -61,6 +65,9 @@ default['arcgis']['webstyles'].tap do |webstyles|
                                      'WebStyles', 'WebStyles-Setup.sh')
 
     case node['arcgis']['version']
+    when '12.0'
+      webstyles['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                               'Portal_for_ArcGIS_Web_Styles_Linux_120_197822.tar.gz')
     when '11.5'
       webstyles['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                'Portal_for_ArcGIS_Web_Styles_Linux_115_195200.tar.gz')

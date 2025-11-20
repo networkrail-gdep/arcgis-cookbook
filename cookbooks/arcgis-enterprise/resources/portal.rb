@@ -24,9 +24,10 @@ actions :system, :unpack, :install, :uninstall, :stop, :start,
         :create_site, :join_site, :set_system_properties, :configure_https,
         :unregister_machine, :unregister_standby, :register_server,
         :federate_server, :unfederate_server, :enable_server_function,
-        :set_allssl, :set_identity_store, :configure_hostidentifiers_properties,
+        :update_org_info, :set_identity_store, :configure_hostidentifiers_properties,
         :import_root_cert, :webgisdr_export, :webgisdr_import,
-        :update_email_settings, :update_security_config, :set_user_default_settings
+        :update_email_settings, :update_security_config, :set_user_default_settings,
+        :update_security_policy, :update_org_settings
 
 attribute :setup_archive, :kind_of => String
 attribute :setups_repo, :kind_of => String
@@ -62,7 +63,7 @@ attribute :full_name, :kind_of => String
 attribute :description, :kind_of => String
 attribute :security_question_index, :kind_of => Integer, :default => 1
 attribute :security_question_answer, :kind_of => String, :sensitive => true
-attribute :allssl, :kind_of => [TrueClass, FalseClass], :default => false
+attribute :organization, :kind_of => Hash, :default => {'allSSL' => true, 'access' => 'public'}
 attribute :server_url, :kind_of => String
 attribute :server_admin_url, :kind_of => String
 attribute :server_username, :kind_of => String
@@ -87,6 +88,9 @@ attribute :email_settings, :kind_of => Hash, :default => nil
 attribute :security_config, :kind_of => Hash, :default => nil
 attribute :user_default_settings, :kind_of => Hash, :default => {}
 attribute :import_certificate_chain, :kind_of => [TrueClass, FalseClass], :default => true
+attribute :hsts_enabled, :kind_of => [TrueClass, FalseClass], :default => false
+attribute :security_policy, :kind_of => Hash, :default => {}
+attribute :org_settings, :kind_of => Hash, :default => {}
 
 def initialize(*args)
   super

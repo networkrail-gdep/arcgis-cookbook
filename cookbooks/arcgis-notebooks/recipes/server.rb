@@ -34,6 +34,8 @@ template ::File.join(node['arcgis']['notebook_server']['install_dir'],
                      node['arcgis']['notebook_server']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']  
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['notebook_server']['hostname']} )
   notifies :stop, 'arcgis_notebooks_server[Stop ArcGIS Notebook Server]', :immediately
   notifies :delete, 'directory[Delete ArcGIS Notebook Server certificates directory]', :immediately

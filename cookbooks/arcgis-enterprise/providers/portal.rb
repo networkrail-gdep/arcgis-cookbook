@@ -474,19 +474,27 @@ action :configure_https do
   portal_admin_client = ArcGIS::PortalAdminClient.new(@new_resource.portal_url,
                                                       @new_resource.username,
                                                       @new_resource.password)
+  
+  ssl_certificates = portal_admin_client.ssl_certificates
+  
+  cert_alias = ssl_certificates['webServerCertificateAlias']
+  hsts_enabled = ssl_certificates['HSTSEnabled'] 
 
-  cert_alias = portal_admin_client.server_ssl_certificate
-
-  unless cert_alias == @new_resource.cert_alias
-    unless portal_admin_client.ssl_certificate_exist?(@new_resource.cert_alias)
+  unless (@new_resource.keystore_file.empty? || cert_alias == @new_resource.cert_alias) && 
+         hsts_enabled == @new_resource.hsts_enabled
+    # Import server SSL certificate if it does not exist and is provided
+    unless @new_resource.keystore_file.empty? || 
+           portal_admin_client.ssl_certificate_exist?(@new_resource.cert_alias)
       portal_admin_client.import_server_ssl_certificate(
         @new_resource.keystore_file,
         @new_resource.keystore_password,
         @new_resource.cert_alias,
         @new_resource.import_certificate_chain)
+      
+      cert_alias = @new_resource.cert_alias
     end
 
-    portal_admin_client.set_server_ssl_certificate(@new_resource.cert_alias)
+    portal_admin_client.set_server_ssl_certificate(cert_alias, @new_resource.hsts_enabled)
 
     sleep(60.0) # wait for portal restart
 
@@ -545,16 +553,40 @@ action :register_server do
   end
 end
 
-action :set_allssl do
+action :update_org_info do
   portal_admin_client = ArcGIS::PortalAdminClient.new(@new_resource.portal_url,
                                                       @new_resource.username,
                                                       @new_resource.password)
 
   portal_admin_client.wait_until_available
 
-  json = portal_admin_client.set_allssl(@new_resource.allssl)
+  json = portal_admin_client.update_org_info(@new_resource.organization)
 
-  Chef::Log.info("Result of allssl update: (#{json})")
+  Chef::Log.info("Result of the portal organization information update: (#{json})")
+end
+
+action :update_org_settings do
+  portal_admin_client = ArcGIS::PortalAdminClient.new(@new_resource.portal_url,
+                                                      @new_resource.username,
+                                                      @new_resource.password)
+
+  portal_admin_client.wait_until_available
+
+  json = portal_admin_client.update_org_settings(@new_resource.org_settings)
+
+  Chef::Log.info("Result of the portal organization settings update: (#{json})")
+end
+
+action :update_security_policy do
+  portal_admin_client = ArcGIS::PortalAdminClient.new(@new_resource.portal_url,
+                                                      @new_resource.username,
+                                                      @new_resource.password)
+
+  portal_admin_client.wait_until_available
+
+  json = portal_admin_client.update_security_policy(@new_resource.security_policy)
+
+  Chef::Log.info("Result of the portal security policy update: (#{json})")
 end
 
 action :federate_server do

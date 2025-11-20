@@ -3,6 +3,10 @@ arcgis-enterprise cookbook CHANGELOG
 
 This file is used to list changes made in each version of the arcgis-enterprise cookbook.
 
+5.3.0
+-----
+- Added support for ArcGIS Enterprise 12.0
+
 5.2.0
 -----
 - Added support for ArcGIS Enterprise 11.5

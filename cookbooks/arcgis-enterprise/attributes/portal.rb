@@ -73,6 +73,11 @@ default['arcgis']['portal'].tap do |portal|
   portal['root_cert_alias'] = ''
   portal['import_certificate_chain'] = true
   portal['allssl'] = true
+  portal['organization'] = {
+    'allSSL' => node['arcgis']['portal']['allssl'],
+    'access' => 'public'
+  }
+  portal['hsts_enabled'] = false
   portal['tomcat_java_opts'] = ''
   portal['configure_autostart'] = true
   portal['install_system_requirements'] = true
@@ -83,6 +88,7 @@ default['arcgis']['portal'].tap do |portal|
   portal['security']['user_store_config'] = {'type' => 'BUILTIN', 'properties' => {}}
   portal['security']['role_store_config'] = {'type' => 'BUILTIN', 'properties' => {}}
   portal['security']['config'] = nil
+  portal['security']['policy'] = {}
 
   portal['log_level'] = 'WARNING'
   portal['max_log_file_age'] = 90
@@ -103,6 +109,7 @@ default['arcgis']['portal'].tap do |portal|
   portal['webgisdr_properties'] = {}
   portal['webgisdr_timeout'] = 36000 # 10 hours
 
+  portal['settings'] = {}
   portal['email_settings'] = nil
   portal['user_default_settings'] = nil
   
@@ -119,6 +126,11 @@ default['arcgis']['portal'].tap do |portal|
     portal['patch_registry'] ='SOFTWARE\\ESRI\\Portal for ArcGIS\\Updates'
 
     case node['arcgis']['version']
+    when '12.0'
+      portal['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                            'Portal_for_ArcGIS_Windows_120_197706.exe').gsub('/', '\\')
+      portal['product_code'] = '{C898DDF9-D6BE-45DF-9A10-3263660BB39F}'
+      portal['unpack_options'] = '/x'
     when '11.5'
       portal['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                             'Portal_for_ArcGIS_Windows_115_195367.exe').gsub('/', '\\')
@@ -193,6 +205,9 @@ default['arcgis']['portal'].tap do |portal|
     portal['lp-setup'] = node['arcgis']['server']['setup']
 
     case node['arcgis']['version']
+    when '12.0'
+      portal['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                            'Portal_for_ArcGIS_Linux_120_197821.tar.gz')
     when '11.5'
       portal['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                             'Portal_for_ArcGIS_Linux_115_195451.tar.gz')

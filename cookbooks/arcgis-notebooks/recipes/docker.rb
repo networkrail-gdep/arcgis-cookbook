@@ -1,7 +1,7 @@
 # Cookbook Name:: arcgis-notebooks
 # Recipe:: docker
 #
-# Copyright 2022 Esri
+# Copyright 2022-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 #
 
 docker_service 'default' do
+  install_method 'package'
+  version node['arcgis']['notebook_server']['docker_version']
   only_if { node['arcgis']['notebook_server']['install_docker'] }
   action [:create, :start]
 end

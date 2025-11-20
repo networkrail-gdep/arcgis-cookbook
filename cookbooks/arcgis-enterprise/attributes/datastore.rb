@@ -51,6 +51,10 @@ default['arcgis']['data_store'].tap do |data_store|
     data_store['patch_registry'] ='SOFTWARE\\ESRI\\ArcGIS Data Store\\Updates'
 
     case node['arcgis']['version']
+    when '12.0'
+      data_store['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                'ArcGIS_DataStore_Windows_120_197709.exe').gsub('/', '\\')
+      data_store['product_code'] = '{E62C9D19-53FE-45C2-B9C5-C86C7C703B8F}'
     when '11.5'
       data_store['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                 'ArcGIS_DataStore_Windows_115_195370.exe').gsub('/', '\\')
@@ -89,6 +93,9 @@ default['arcgis']['data_store'].tap do |data_store|
     data_store['lp-setup'] = node['arcgis']['data_store']['setup']
 
     case node['arcgis']['version']
+    when '12.0'
+      data_store['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                'ArcGIS_DataStore_Linux_120_197823.tar.gz')
     when '11.5'
       data_store['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                 'ArcGIS_DataStore_Linux_115_195461.tar.gz')

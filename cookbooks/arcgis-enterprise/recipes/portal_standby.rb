@@ -24,6 +24,8 @@ template ::File.join(node['arcgis']['portal']['install_dir'],
                      node['arcgis']['portal']['install_subdir'],
                      'framework', 'etc', 'hostname.properties') do
   source 'hostname.properties.erb'
+  owner node['arcgis']['run_as_user']
+  group node['arcgis']['run_as_group']
   variables ( {:hostname => node['arcgis']['portal']['hostname']} )
   notifies :stop, 'arcgis_enterprise_portal[Stop Portal for ArcGIS]', :immediately
   not_if { node['arcgis']['portal']['hostname'].empty? }
@@ -84,7 +86,7 @@ arcgis_enterprise_portal 'Configure HTTPS' do
   root_cert node['arcgis']['portal']['root_cert']
   root_cert_alias node['arcgis']['portal']['root_cert_alias']
   import_certificate_chain node['arcgis']['portal']['import_certificate_chain']
-  not_if { node['arcgis']['portal']['keystore_file'].empty? }
+  hsts_enabled node['arcgis']['portal']['hsts_enabled']
   retries 5
   retry_delay 30
   action :configure_https

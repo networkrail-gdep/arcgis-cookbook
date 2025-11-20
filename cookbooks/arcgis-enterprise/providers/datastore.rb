@@ -383,6 +383,10 @@ action :configure do
 
   Utils.wait_until_url_available(server_admin_url)
 
+  datastore_admin_client = ArcGIS::DataStoreAdminClient.new()
+
+  datastore_admin_client.wait_until_available
+
   datastore_tools = ArcGIS::DataStoreTools.new(node['arcgis']['version'],
                                                node['platform'],
                                                @new_resource.install_dir,

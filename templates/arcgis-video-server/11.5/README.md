@@ -50,7 +50,7 @@ Windows
 
 Linux
 
-* ArcGIS_Video_Server_Linux_115_195485.tar.gz
+* ArcGIS_Video_Server_Linux_115_196647.tar.gz
 
 > The ArcGIS software repository directory is specified by the arcgis.repository.archives attribute. By default, it is set to local directory C:\Software\Archives on Windows and /opt/software/archives on Linux. However, it is recommended to create an ArcGIS software repository located on a separate file server that is accessible from all the machines in the deployment for the user account used to run the Chef client.
 

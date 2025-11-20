@@ -27,6 +27,14 @@ arcgis_enterprise_portal "Update Security Configuration" do
   action :update_security_config
 end
 
+arcgis_enterprise_portal "Update Security Policy" do
+  portal_url node['arcgis']['portal']['url']
+  username node['arcgis']['portal']['admin_username']
+  password node['arcgis']['portal']['admin_password']
+  security_policy node['arcgis']['portal']['security']['policy']
+  action :update_security_policy
+end
+
 arcgis_enterprise_portal 'Configure Portal identity store' do
   portal_url node['arcgis']['portal']['url']
   username node['arcgis']['portal']['admin_username']

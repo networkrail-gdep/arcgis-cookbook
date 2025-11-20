@@ -2,7 +2,7 @@
 # Cookbook Name:: arcgis-mission
 # Attributes:: default
 #
-# Copyright 2024 Esri
+# Copyright 2024-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,6 +96,10 @@ default['arcgis']['mission_server'].tap do |mission_server|
     mission_server['log_dir'] = 'C:\\arcgismissionserver\\logs'
 
     case node['arcgis']['version']
+    when '12.0'
+      mission_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                    'ArcGIS_Mission_Server_Windows_120_197768.exe').gsub('/', '\\')
+      mission_server['product_code'] = '{16AF7BDF-E692-4490-A3F6-1F41812CF155}'
     when '11.5'
       mission_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                     'ArcGIS_Mission_Server_Windows_115_195404.exe').gsub('/', '\\')
@@ -170,6 +174,9 @@ default['arcgis']['mission_server'].tap do |mission_server|
                                             'usr', 'logs')
 
     case node['arcgis']['version']
+    when '12.0'
+      mission_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                                    'ArcGIS_Mission_Server_Linux_120_197844.tar.gz')
     when '11.5'
       mission_server['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                                     'ArcGIS_Mission_Server_Linux_115_195483.tar.gz')

@@ -54,7 +54,7 @@ node['arcgis']['repository']['files'].each do |filename, props|
   path = ::File.join(local_archives, filename)
 
   execute "Download #{filename}" do
-    command "#{az} storage blob download --file #{path} --account-name #{account_name} --container-name #{container_name} --name #{blob_name} --auth-mode #{auth_mode} --no-progress"
+    command "#{az} storage blob download --file #{path} --account-name #{account_name} --container-name #{container_name} --name #{blob_name} --auth-mode #{auth_mode} --no-progress --output none"
     environment env
     not_if { ::File.exist?(path) }
   end
@@ -100,7 +100,7 @@ end
 
 patch_notification['patches'].each do |patch|
   execute "Download patch #{patch}" do
-    command "#{az} storage blob download-batch --destination #{temp_dir} --pattern  #{patch_notification['subfolder']}/#{patch} --account-name #{account_name} --source #{container_name} --auth-mode #{auth_mode} --overwrite true --no-progress"
+    command "#{az} storage blob download-batch --destination #{temp_dir} --pattern  #{patch_notification['subfolder']}/#{patch} --account-name #{account_name} --source #{container_name} --auth-mode #{auth_mode} --overwrite true --no-progress --output none"
     environment env
     live_stream true
     not_if { patch_notification['subfolder'].nil? }

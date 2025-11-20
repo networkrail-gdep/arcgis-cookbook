@@ -4,6 +4,11 @@ esri-tomcat cookbook CHANGELOG
 
 This file is used to list changes made in each version of the esri-tomcat cookbook.
 
+0.3.3
+-----
+
+- Updated Open JDK and Tomcat versions.
+
 0.3.2
 -----
 

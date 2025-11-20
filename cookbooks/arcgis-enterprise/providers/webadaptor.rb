@@ -152,13 +152,6 @@ action :uninstall do
     cmd.run_command
     cmd.error!
   else
-    dst_path = ::File.join(node['arcgis']['web_server']['webapp_dir'],
-                           @new_resource.instance_name + '.war')
-
-    if ::File.exist?(dst_path)
-      FileUtils.rm(dst_path)
-    end
-
     install_subdir = ::File.join(@new_resource.install_dir,
                                  node['arcgis']['web_adaptor']['install_subdir'])
     cmd = ::File.join(install_subdir, 'java/uninstall_WebAdaptor')
@@ -190,8 +183,28 @@ action :deploy do
     rescue Exception
       Chef::Log.warn("Skipping Deployment: #{$!}")
     end
+    
+    new_resource.updated_by_last_action(true)
   end
-  new_resource.updated_by_last_action(true)
+end
+
+action :undeploy do
+  if node['platform'] == 'windows'
+    # Do nothing
+  else
+    dst_path = ::File.join(node['arcgis']['web_server']['webapp_dir'],
+                           @new_resource.instance_name + '.war')
+    
+    FileUtils.rm(dst_path) if ::File.exist?(dst_path)
+    
+    # Delete the exploded directory if it exists.
+    exploded_dir = ::File.join(node['arcgis']['web_server']['webapp_dir'],
+                               @new_resource.instance_name)
+    FileUtils.rm_rf(exploded_dir) if ::File.exist?(exploded_dir)
+    
+    new_resource.updated_by_last_action(true)
+  end
+
 end
 
 action :configure_with_server do

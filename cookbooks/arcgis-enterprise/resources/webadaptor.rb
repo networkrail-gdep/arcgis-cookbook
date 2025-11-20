@@ -19,7 +19,7 @@
 
 unified_mode true
 
-actions :system, :unpack, :install, :uninstall, :deploy,
+actions :system, :unpack, :install, :uninstall, :deploy, :undeploy,
         :configure_with_server, :configure_with_portal
 
 attribute :setup_archive, :kind_of => String

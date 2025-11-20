@@ -183,6 +183,18 @@ module ArcGIS
         begin
           response = send_request(request, @server_url)
 
+          # There are times when the upgrade api does not stick around for 30s and
+          # so when chef polls it receives a 404 response.
+          if response.code.to_i == 200
+            error_info = JSON.parse(response.body)
+            if error_info['code'] == 404
+              return {
+                'upgradeStatus' => 'Success with warnings',
+                'warnings' => error_info['messages']
+              }
+            end
+          end
+
           validate_response(response)
 
           return JSON.parse(response.body)
@@ -351,6 +363,21 @@ module ArcGIS
                             'adminURL' => primary_server_url + '/admin',
                             'pullLicense' => pull_license,
                             'f' => 'json')
+
+      response = send_request(request, @server_url, true)
+
+      validate_response(response)
+    end
+
+    def delete_site
+      request = Net::HTTP::Post.new(URI.parse(
+        @server_url + '/admin/deleteSite').request_uri)
+
+      request.add_field('Referer', 'referer')
+
+      token = generate_token()
+
+      request.set_form_data('token' => token, 'f' => 'json')
 
       response = send_request(request, @server_url, true)
 
@@ -1228,7 +1255,7 @@ module ArcGIS
       JSON.parse(response.body)
     end
 
-    def update_services_directory_properties(services_dir_enabled)
+    def update_services_directory_properties(services_dir_enabled, callback_functions_enabled)
       properties = services_directory_properties()
 
       token = generate_token()
@@ -1242,7 +1269,7 @@ module ArcGIS
 
       request.body = URI.encode_www_form(
         'servicesDirEnabled' => services_dir_enabled ? 'true' : 'false',
-        'callbackFunctionsEnabled' => properties['callbackFunctionsEnabled'],
+        'callbackFunctionsEnabled' => callback_functions_enabled ? 'true' : 'false',
         'allowedOrigins' => properties['allowedOrigins'],
         'jsapi.arcgis' => properties['jsapi.arcgis'],
         'jsapi.arcgis.sdk' => properties['jsapi.arcgis.sdk'],

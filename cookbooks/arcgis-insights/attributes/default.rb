@@ -20,7 +20,7 @@ include_attribute 'arcgis-repository'
 include_attribute 'arcgis-enterprise'
 
 default['arcgis']['insights'].tap do |insights|
-  insights['version'] = '2024.2'
+  insights['version'] = '2025.1'
 
   insights['patches'] = []
 
@@ -30,6 +30,10 @@ default['arcgis']['insights'].tap do |insights|
                         node['arcgis']['insights']['version'] + '\\Insights\\Setup.exe'
 
     case node['arcgis']['insights']['version']
+    when '2025.1'
+      insights['product_code'] = '{1C1A7EBC-4268-49CB-BEF4-111FE3EA93E3}'
+      insights['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                              'ArcGIS_Insights_Windows_2025_1_195798.exe')
     when '2024.2'
       insights['product_code'] = '{FE0F6D4B-5BF3-4CFA-9E2F-E31B2438B5B2}'
       insights['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
@@ -113,6 +117,9 @@ default['arcgis']['insights'].tap do |insights|
                                     'Insights/Insights-Setup.sh')
 
     case node['arcgis']['insights']['version']
+    when '2025.1'
+      insights['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
+                                              'ArcGIS_Insights_Linux_2025_1_195799.tar.gz')
     when '2024.2'
       insights['setup_archive'] = ::File.join(node['arcgis']['repository']['archives'],
                                               'ArcGIS_Insights_Linux_2024_2_193022.tar.gz')

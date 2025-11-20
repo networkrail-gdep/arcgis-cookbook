@@ -65,7 +65,7 @@ default['arcgis']['repository'].tap do |repository|
   repository['azure_cli']['wbin_dir'] = 'C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin'
   repository['azure_cli']['install_dir'] = '/usr/local/azure-cli-env'
   
-  repository['patch_notification']['url'] = 'https://downloads.esri.com/patch_notification/patches.json'
+  repository['patch_notification']['url'] = 'https://content.esri.com/patch_notification/patches.json'
   repository['patch_notification']['versions'] = [node['arcgis']['version']]
   repository['patch_notification']['products'] = []
   repository['patch_notification']['patches'] = []

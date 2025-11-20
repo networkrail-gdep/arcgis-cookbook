@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Esri
+# Copyright 2022-2025 Esri
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -325,7 +325,7 @@ module ArcGIS
       validate_response(response)
     end
 
-    def unregister_web_adaptors
+    def web_adaptors
       request = Net::HTTP::Post.new(URI.parse(@server_url +
         "/admin/system/webadaptors").request_uri)
 
@@ -339,8 +339,10 @@ module ArcGIS
 
       validate_response(response)
 
-      web_adaptors = JSON.parse(response.body)['webAdaptors']
+      return JSON.parse(response.body)['webAdaptors']
+    end
 
+    def unregister_web_adaptors
       web_adaptors.each do |web_adaptor|
         unregister_web_adaptor(web_adaptor['id'])
       end
