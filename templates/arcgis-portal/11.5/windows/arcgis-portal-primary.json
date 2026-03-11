@@ -1,8 +1,8 @@
 {
     "arcgis": {
         "version": "11.5",
-        "run_as_user": "arcgis",
-        "run_as_password": "<run_as_password>",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "&C=$0!U0R}zYx64W",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
@@ -11,8 +11,8 @@
         "portal": {
             "install_dir": "C:\\Program Files\\ArcGIS\\Portal",
             "install_system_requirements": true,
-            "admin_username": "<portal_admin_username>",
-            "admin_password": "<portal_admin_password>",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTB*Z[6ab}(mTCX",
             "admin_email": "<portal_admin_email>",
             "admin_full_name": "Administrator",
             "admin_description": "Initial account administrator",
