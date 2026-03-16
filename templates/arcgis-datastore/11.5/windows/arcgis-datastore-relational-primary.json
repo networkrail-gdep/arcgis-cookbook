@@ -1,16 +1,16 @@
 {
     "arcgis": {
         "version": "11.5",
-        "run_as_user": "arcgis",
-        "run_as_password": "<run_as_password>",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "J)KqX&AO)F)JKD%k",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
         "server": {
-            "admin_username": "<server_admin_username>",
-            "admin_password": "<server_admin_password>",
+            "admin_username": "portaladmin",
+            "admin_password": "Arcg1sDatast0r32o26",
             "url": "https://SERVER:6443/arcgis"
         },
         "data_store": {
@@ -22,7 +22,7 @@
             "data_dir": "C:\\arcgisdatastore",
             "relational": {
                 "backup_type": "fs",
-                "backup_location": "\\\\FILESERVER\\arcgisbackup\\relational",
+                "backup_location": "C:\\arcgisbackup\\relational",
                 "disk_threshold_readonly": 5120,
                 "max_connections": 150,
                 "pitr": "disable",
