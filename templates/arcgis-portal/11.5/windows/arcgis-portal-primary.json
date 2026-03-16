@@ -9,6 +9,7 @@
             "setups": "C:\\Software\\Setups"
         },
         "portal": {
+            "url": "https://vm-arc-prtl-dev:7443/arcgis",
             "install_dir": "C:\\Program Files\\ArcGIS\\Portal",
             "install_system_requirements": true,
             "admin_username": "portaladmin",
@@ -31,8 +32,8 @@
             "root_cert": "",
             "root_cert_alias": "rootcert",
             "system_properties": {
-                "privatePortalURL": "https://domain.com:7443/arcgis",
-                "WebContextURL": "https://domain.com/portal"
+                "privatePortalURL": "https://vm-arc-prtl-dev:7443/arcgis",
+                "WebContextURL": "https://devgis.networkrail.co.uk/portal"
             }
         }
     },
