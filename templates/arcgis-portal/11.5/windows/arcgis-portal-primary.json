@@ -2,7 +2,7 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "&C=$0!U0R}zYx64W",
+        "run_as_password": "eTEIh!UwR%&N6x!E",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
