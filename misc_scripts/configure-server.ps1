@@ -6,10 +6,17 @@ $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
 $templateJsonTarget = 'C:\chef\arcgis-server.json'
 $serverOkMarker   = 'C:\chef\server_configured.ok'
+$serverTranscript = 'C:\chef\configure-server.transcript.txt'
+
+# Start a transcript so background runs write to a log file.
+try {
+  Start-Transcript -Path $serverTranscript -Append -ErrorAction SilentlyContinue | Out-Null
+} catch {}
 
 # If we've already successfully configured ArcGIS Server, exit quickly.
 if (Test-Path $serverOkMarker) {
   Write-Host ("Server configuration marker found at {0}; skipping Cinc run." -f $serverOkMarker)
+  try { Stop-Transcript | Out-Null } catch {}
   return
 }
 
@@ -143,3 +150,5 @@ if (Test-Path $clientLogPath) {
 } else {
   Write-Host "C:\chef\client.log not found."
 }
+
+try { Stop-Transcript | Out-Null } catch {}
