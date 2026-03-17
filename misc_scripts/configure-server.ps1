@@ -5,6 +5,13 @@ $chefDownloadRoot = 'C:\Users\gdepadmin'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
 $templateJsonTarget = 'C:\chef\arcgis-server.json'
+$serverOkMarker   = 'C:\chef\server_configured.ok'
+
+# If we've already successfully configured ArcGIS Server, exit quickly.
+if (Test-Path $serverOkMarker) {
+  Write-Host ("Server configuration marker found at {0}; skipping Cinc run." -f $serverOkMarker)
+  return
+}
 
 Write-Host "=== Preparing C:\chef workspace for ArcGIS Server ==="
 
@@ -122,6 +129,12 @@ $exitCode = $LASTEXITCODE
 Pop-Location
 
 Write-Host ("cinc-client exited with code {0}" -f $exitCode)
+
+if ($exitCode -eq 0) {
+  # Mark Server as successfully configured so future runs can be skipped.
+  New-Item -ItemType File -Path $serverOkMarker -Force | Out-Null
+  Write-Host ("Wrote Server configuration marker to {0}" -f $serverOkMarker)
+}
 
 if (Test-Path $clientLogPath) {
   Write-Host "----- BEGIN C:\chef\client.log (last 200 lines) -----"

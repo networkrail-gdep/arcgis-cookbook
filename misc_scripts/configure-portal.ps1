@@ -6,6 +6,13 @@ $esriZipName       = 'arcgis-5.2.0-cookbooks.zip'
 $portalCookbookDir = Join-Path $chefDownloadRoot 'arcgis-portal'
 $customZipPattern  = 'arcgis-cookbook*.zip'
 $templateJsonTarget = 'C:\chef\arcgis-portal.json'
+$portalOkMarker    = 'C:\chef\portal_configured.ok'
+
+# If we've already successfully configured Portal, exit quickly.
+if (Test-Path $portalOkMarker) {
+  Write-Host ("Portal configuration marker found at {0}; skipping Cinc run." -f $portalOkMarker)
+  return
+}
 
 Write-Host "=== Preparing C:\chef workspace ==="
 
@@ -122,6 +129,12 @@ $exitCode = $LASTEXITCODE
 Pop-Location
 
 Write-Host ("cinc-client exited with code {0}" -f $exitCode)
+
+if ($exitCode -eq 0) {
+  # Mark Portal as successfully configured so future runs can be skipped.
+  New-Item -ItemType File -Path $portalOkMarker -Force | Out-Null
+  Write-Host ("Wrote Portal configuration marker to {0}" -f $portalOkMarker)
+}
 
 if (Test-Path $clientLogPath) {
   Write-Host "----- BEGIN C:\chef\client.log (last 200 lines) -----"
