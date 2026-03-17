@@ -11,7 +11,7 @@
         "server": {
             "admin_username": "portaladmin",
             "admin_password": "Arcg1sDatast0r32o26",
-            "url": "https://SERVER:6443/arcgis"
+            "url": "https://10.163.92.71:6443/arcgis"
         },
         "data_store": {
             "install_dir": "C:\\Program Files\\ArcGIS\\DataStore",
