@@ -124,14 +124,22 @@ if ($customZip) {
 
 Write-Host "=== Running Cinc to configure ArcGIS Server ==="
 
-$clientExe = Get-Command 'cinc-client' -ErrorAction SilentlyContinue
-if (-not $clientExe) {
-  Write-Host "cinc-client not found in PATH; ensure Cinc is installed and retry."
+$cincClientCandidates = @(
+  "C:\opscode\cinc\bin\cinc-client.bat",
+  "C:\opscode\cinc\bin\cinc-client.exe",
+  "$env:ProgramFiles\cinc-project\cinc\bin\cinc-client.bat",
+  "$env:ProgramFiles\cinc-project\cinc\bin\cinc-client.exe"
+)
+
+$clientExePath = $cincClientCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if (-not $clientExePath) {
+  Write-Host "cinc-client not found in common install locations; ensure Cinc is installed and retry."
   return
 }
 
 Push-Location $chefBase
-& $clientExe.Source -z -c 'C:\chef\client.rb' -j 'C:\chef\arcgis-server.json' -L 'C:\chef\client.log'
+& $clientExePath -z -c 'C:\chef\client.rb' -j 'C:\chef\arcgis-server.json' -L 'C:\chef\client.log'
 $exitCode = $LASTEXITCODE
 Pop-Location
 
