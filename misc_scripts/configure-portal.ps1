@@ -118,6 +118,7 @@ if ($customZip) {
 Write-Host "=== Running Cinc to configure Portal ==="
 
 $cincClientCandidates = @(
+  "C:\cinc-project\cinc\bin\cinc-client.bat",
   "C:\opscode\cinc\bin\cinc-client.bat",
   "C:\opscode\cinc\bin\cinc-client.exe",
   "$env:ProgramFiles\cinc-project\cinc\bin\cinc-client.bat",
