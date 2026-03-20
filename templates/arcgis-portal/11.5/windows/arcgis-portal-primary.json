@@ -8,6 +8,9 @@
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
+        "webstyles": {
+            "setup_options": "/l*v C:\\chef\\webstyles.log"
+        },
         "portal": {
             "url": "https://vm-arc-prtl-dev:7443/arcgis",
             "install_dir": "C:\\Program Files\\ArcGIS\\Portal",
