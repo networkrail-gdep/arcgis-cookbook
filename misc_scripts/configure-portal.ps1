@@ -1,16 +1,23 @@
 # --- Variables ---
 $chefBase          = 'C:\chef'
 $chefCache         = 'C:\chef\cache'
-$chefDownloadRoot  = 'C:\Users\gdepadmin'
+$chefDownloadRoot  = 'C:\Users'
 $esriZipName       = 'arcgis-5.2.0-cookbooks.zip'
 $portalCookbookDir = Join-Path $chefDownloadRoot 'arcgis-portal'
 $customZipPattern  = 'arcgis-cookbook*.zip'
 $templateJsonTarget = 'C:\chef\arcgis-portal.json'
 $portalOkMarker    = 'C:\chef\portal_configured.ok'
+$portalTranscript  = 'C:\chef\configure-portal.transcript.txt'
+
+# Start a transcript so background runs write to a log file.
+try {
+  Start-Transcript -Path $portalTranscript -Append -ErrorAction SilentlyContinue | Out-Null
+} catch {}
 
 # If we've already successfully configured Portal, exit quickly.
 if (Test-Path $portalOkMarker) {
   Write-Host ("Portal configuration marker found at {0}; skipping Cinc run." -f $portalOkMarker)
+  try { Stop-Transcript | Out-Null } catch {}
   return
 }
 
@@ -152,3 +159,5 @@ if (Test-Path $clientLogPath) {
 } else {
   Write-Host "C:\chef\client.log not found."
 }
+
+try { Stop-Transcript | Out-Null } catch {}

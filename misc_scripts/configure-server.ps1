@@ -1,7 +1,7 @@
 # --- Variables ---
 $chefBase         = 'C:\chef'
 $chefCache        = 'C:\chef\cache'
-$chefDownloadRoot = 'C:\Users\gdepadmin'
+$chefDownloadRoot = 'C:\Users'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
 $templateJsonTarget = 'C:\chef\arcgis-server.json'
@@ -101,7 +101,7 @@ if (Test-Path $templateJsonSource) {
 
 Write-Host "=== Overlaying custom arcgis-server.json from arcgis-cookbook zip (if present) ==="
 
-# Look anywhere under C:\Users\gdepadmin for the custom arcgis-cookbook zip
+# Look anywhere under $chefDownloadRoot for the custom arcgis-cookbook zip
 $customZip = Get-ChildItem -Path $chefDownloadRoot -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($customZip) {
   if (Test-Path $customRoot) {

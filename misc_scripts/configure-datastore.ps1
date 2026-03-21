@@ -1,16 +1,23 @@
 # --- Variables ---
 $chefBase             = 'C:\chef'
 $chefCache            = 'C:\chef\cache'
-$chefDownloadRoot     = 'C:\Users\gdepadmin'
+$chefDownloadRoot     = 'C:\Users'
 $esriZipName          = 'arcgis-5.2.0-cookbooks.zip'
 $datastoreCookbookDir = Join-Path $chefDownloadRoot 'arcgis-datastore'
 $customZipPattern     = 'arcgis-cookbook*.zip'
 $templateJsonTarget   = 'C:\chef\arcgis-datastore.json'
 $datastoreOkMarker    = 'C:\chef\datastore_configured.ok'
+$datastoreTranscript  = 'C:\chef\configure-datastore.transcript.txt'
+
+# Start a transcript so background runs write to a log file.
+try {
+  Start-Transcript -Path $datastoreTranscript -Append -ErrorAction SilentlyContinue | Out-Null
+} catch {}
 
 # If we've already successfully configured Data Store, exit quickly.
 if (Test-Path $datastoreOkMarker) {
   Write-Host ("Data Store configuration marker found at {0}; skipping Cinc run." -f $datastoreOkMarker)
+  try { Stop-Transcript | Out-Null } catch {}
   return
 }
 
@@ -152,3 +159,5 @@ if (Test-Path $clientLogPath) {
 } else {
   Write-Host "C:\chef\client.log not found."
 }
+
+try { Stop-Transcript | Out-Null } catch {}
