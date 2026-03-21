@@ -2,14 +2,14 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "+eKw(gzRR}C{-I=%",
+        "run_as_password": "M!v!WhUq{3}p9#e+",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
         "server": {
-            "install_dir": "C:\\Program Files\\ArcGIS\\Server",
+            "install_dir": "F:\\ArcGIS\\Server",
             "install_system_requirements": true,
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
@@ -17,10 +17,10 @@
             "log_level": "WARNING",
             "enable_debug": false,
             "soc_max_heap_size": 64,
-            "directories_root": "C:\\arcgisserver",
-            "log_dir": "C:\\arcgisserver\\logs",
+            "directories_root": "F:\\arcgisserver",
+            "log_dir": "F:\\arcgisserver\\logs",
             "config_store_type": "FILESYSTEM",
-            "config_store_connection_string": "C:\\arcgisserver\\config-store",
+            "config_store_connection_string": "F:\\arcgisserver\\config-store",
             "services_dir_enabled": true,
             "system_properties": {
                 "suspendedMachineUnregisterThreshold": -1,

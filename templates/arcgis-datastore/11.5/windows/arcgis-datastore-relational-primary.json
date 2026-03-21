@@ -2,7 +2,7 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "H-3p&tLk$cq1&+Ok",
+        "run_as_password": "ve2HXw)L5NfDLROT",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
@@ -14,15 +14,15 @@
             "url": "https://10.163.92.70:6443/arcgis"
         },
         "data_store": {
-            "install_dir": "C:\\Program Files\\ArcGIS\\DataStore",
+            "install_dir": "F:\\ArcGIS\\DataStore",
             "setup_options": "ADDLOCAL=relational",
             "install_system_requirements": true,
             "types": "relational",
             "preferredidentifier": "hostname",
-            "data_dir": "C:\\arcgisdatastore",
+            "data_dir": "F:\\arcgisdatastore",
             "relational": {
                 "backup_type": "fs",
-                "backup_location": "C:\\arcgisbackup\\relational",
+                "backup_location": "F:\\arcgisbackup\\relational",
                 "disk_threshold_readonly": 5120,
                 "max_connections": 150,
                 "pitr": "disable",
