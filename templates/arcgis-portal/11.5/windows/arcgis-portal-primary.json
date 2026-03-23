@@ -1,38 +1,42 @@
 {
     "arcgis": {
         "version": "11.5",
-        "run_as_user": "arcgis",
-        "run_as_password": "<run_as_password>",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "!Bea4rHHWpo0GBf5",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
+        "webstyles": {
+            "setup_options": "/l*v C:\\chef\\webstyles.log"
+        },
         "portal": {
-            "install_dir": "C:\\Program Files\\ArcGIS\\Portal",
+            "url": "https://azarcprtldev:7443/arcgis",
+            "install_dir": "F:\\ArcGIS\\Portal",
             "install_system_requirements": true,
-            "admin_username": "<portal_admin_username>",
-            "admin_password": "<portal_admin_password>",
-            "admin_email": "<portal_admin_email>",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
+            "admin_email": "Nitish.Chandu@networkrail.co.uk",
             "admin_full_name": "Administrator",
             "admin_description": "Initial account administrator",
             "security_question_index": 1,
-            "security_question_answer": "<security_question_answer>",
-            "data_dir": "C:\\arcgisportal",
-            "log_dir": "C:\\arcgisportal\\logs",
+            "security_question_answer": "NREsr1arcg1sP0rtal",
+            "data_dir": "F:\\arcgisportal",
+            "log_dir": "F:\\arcgisportal\\logs",
             "log_level": "WARNING",
             "enable_debug": false,
             "content_store_type": "fileStore",
             "content_store_provider": "FileSystem",
-            "content_store_connection_string": "\\\\FILESERVER\\arcgisportal\\content",
+            "content_store_connection_string": "F:\\arcgisportal\\content",
             "object_store": "",
             "authorization_file": "C:\\Software\\AuthorizationFiles\\11.5\\Portal.json",
             "user_license_type_id": "",
             "root_cert": "",
             "root_cert_alias": "rootcert",
             "system_properties": {
-                "privatePortalURL": "https://domain.com:7443/arcgis",
-                "WebContextURL": "https://domain.com/portal"
+                "privatePortalURL": "https://azarcprtldev:7443/arcgis",
+                "WebContextURL": "https://devgis.networkrail.co.uk/portal"
             }
         }
     },
