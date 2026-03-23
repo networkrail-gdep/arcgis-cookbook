@@ -12,7 +12,7 @@
             "setup_options": "/l*v C:\\chef\\webstyles.log"
         },
         "portal": {
-            "url": "https://vm-arc-prtl-dev:7443/arcgis",
+            "url": "https://azarcprtldev:7443/arcgis",
             "install_dir": "F:\\ArcGIS\\Portal",
             "install_system_requirements": true,
             "admin_username": "portaladmin",
@@ -35,7 +35,7 @@
             "root_cert": "",
             "root_cert_alias": "rootcert",
             "system_properties": {
-                "privatePortalURL": "https://vm-arc-prtl-dev:7443/arcgis",
+                "privatePortalURL": "https://azarcprtldev:7443/arcgis",
                 "WebContextURL": "https://devgis.networkrail.co.uk/portal"
             }
         }
