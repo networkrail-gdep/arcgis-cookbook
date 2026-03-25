@@ -51,6 +51,7 @@ if (-not (Test-Path $clientRbPath)) {
 # Ensure Esri cookbooks are available under C:\chef (re-extract if needed)
 $cookbooksDir = Join-Path $chefBase 'cookbooks'
 $templatesDir = Join-Path $chefBase 'templates'
+ $customRoot   = Join-Path $chefBase 'custom-cookbook'
 
 if (-not (Test-Path $cookbooksDir -PathType Container)) {
   Write-Host "=== Extracting Esri arcgis-5.2.0-cookbooks.zip for federation ==="
@@ -93,11 +94,21 @@ Write-Host "=== Preparing gis-server-federation.json ==="
 $templateJsonSource = Join-Path $chefBase $templateJsonSourceRel
 if (Test-Path $templateJsonSource) {
   Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Write-Host "Copied federation template to $templateJsonTarget"
+  Write-Host "Copied Esri federation template to $templateJsonTarget"
 } else {
   Write-Host "Federation template not found at $templateJsonSource; aborting."
   try { Stop-Transcript | Out-Null } catch {}
   return
+}
+
+# If a custom cookbook has been extracted (from the packaged arcgis-cookbook zip),
+# prefer its gis-server-federation.json to override the Esri default.
+$customJsonSource = Join-Path $customRoot 'templates\arcgis-server\11.5\windows\gis-server-federation.json'
+if (Test-Path $customJsonSource) {
+  Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
+  Write-Host "Overrode $templateJsonTarget with custom federation template from $customJsonSource"
+} else {
+  Write-Host "Custom gis-server-federation.json not found under $customRoot; using Esri template."
 }
 
 Write-Host "=== Running Cinc to federate GIS Server with Portal ==="
