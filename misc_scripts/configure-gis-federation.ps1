@@ -52,6 +52,7 @@ if (-not (Test-Path $clientRbPath)) {
 $cookbooksDir = Join-Path $chefBase 'cookbooks'
 $templatesDir = Join-Path $chefBase 'templates'
  $customRoot   = Join-Path $chefBase 'custom-cookbook'
+ $customZipPattern = 'arcgis-cookbook*.zip'
 
 if (-not (Test-Path $cookbooksDir -PathType Container)) {
   Write-Host "=== Extracting Esri arcgis-5.2.0-cookbooks.zip for federation ==="
@@ -87,6 +88,22 @@ if (-not (Test-Path $templatesDir)) {
   Write-Host "C:\chef\templates not found after extraction. Aborting federation."
   try { Stop-Transcript | Out-Null } catch {}
   return
+}
+
+Write-Host "=== Overlaying custom gis-server-federation.json from arcgis-cookbook zip (if present) ==="
+
+# Look anywhere under $chefDownloadRoot for the custom arcgis-cookbook zip
+$customZip = Get-ChildItem -Path $chefDownloadRoot -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($customZip) {
+  if (Test-Path $customRoot) {
+    Remove-Item -Path $customRoot -Recurse -Force
+  }
+  New-Item -ItemType Directory -Path $customRoot -Force | Out-Null
+
+  Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
+  Write-Host ("Expanded custom cookbook zip from {0} to {1}" -f $customZip.FullName, $customRoot)
+} else {
+  Write-Host "No custom arcgis-cookbook*.zip found under $chefDownloadRoot; using Esri template unless overridden elsewhere."
 }
 
 Write-Host "=== Preparing gis-server-federation.json ==="
