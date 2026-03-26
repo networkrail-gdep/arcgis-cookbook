@@ -1,16 +1,16 @@
 {
     "arcgis": {
         "server": {
-            "private_url": "https://domain.com:6443/arcgis",
-            "web_context_url": "https://domain.com/server",
-            "admin_username": "<server_admin_username>",
-            "admin_password": "<server_admin_password>",
+            "private_url": "https://10.163.92.74:6443/arcgis",
+            "web_context_url": "https://10.163.92.74:6443/arcgis",
+            "admin_username": "arcgisadmin",
+            "admin_password": "nXTB*Z[6ab}(mTCX",
             "is_hosting": false
         },
         "portal": {
-            "private_url": "https://domain.com/portal",
-            "admin_username": "<portal_admin_username>",
-            "admin_password": "<portal_admin_password>",
+            "private_url": "https://10.163.92.71:7443/arcgis",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
             "root_cert": "",
             "root_cert_alias": "imagehosting"
         }

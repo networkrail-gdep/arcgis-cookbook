@@ -1,12 +1,26 @@
+param(
+  # Name of the federation JSON file under templates\arcgis-server\11.5\windows (e.g. 'gis-server-federation.json', 'imagehosting-federation.json')
+  [string]$FederationJsonName = 'gis-server-federation.json'
+)
+
 # --- Variables ---
-$chefBase              = 'C:\chef'
-$chefCache             = 'C:\chef\cache'
-$chefDownloadRoot      = 'C:\Users'
-$esriZipName           = 'arcgis-5.2.0-cookbooks.zip'
-$templateJsonSourceRel = 'templates\arcgis-server\11.5\windows\gis-server-federation.json'
-$templateJsonTarget    = 'C:\chef\gis-server-federation.json'
-$federationOkMarker    = 'C:\chef\gis_federation_configured.ok'
-$federationTranscript  = 'C:\chef\configure-gis-federation.transcript.txt'
+$chefBase         = 'C:\chef'
+$chefCache        = 'C:\chef\cache'
+$chefDownloadRoot = 'C:\Users'
+$esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
+
+# Derive paths and marker names from the federation JSON name
+if ($FederationJsonName.ToLower().EndsWith('.json')) {
+  $federationBaseName = [System.IO.Path]::GetFileNameWithoutExtension($FederationJsonName)
+} else {
+  $federationBaseName = $FederationJsonName
+  $FederationJsonName = "$FederationJsonName.json"
+}
+
+$templateJsonSourceRel = "templates\arcgis-server\11.5\windows\$FederationJsonName"
+$templateJsonTarget    = "C:\\chef\\$FederationJsonName"
+$federationOkMarker    = "C:\\chef\\${federationBaseName}_federation_configured.ok"
+$federationTranscript  = "C:\\chef\\configure-${federationBaseName}-federation.transcript.txt"
 
 # Start a transcript so background runs write to a log file.
 try {
@@ -90,7 +104,7 @@ if (-not (Test-Path $templatesDir)) {
   return
 }
 
-Write-Host "=== Overlaying custom gis-server-federation.json from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Overlaying custom $FederationJsonName from arcgis-cookbook zip (if present) ==="
 
 # Look anywhere under $chefDownloadRoot for the custom arcgis-cookbook zip
 $customZip = Get-ChildItem -Path $chefDownloadRoot -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -106,7 +120,7 @@ if ($customZip) {
   Write-Host "No custom arcgis-cookbook*.zip found under $chefDownloadRoot; using Esri template unless overridden elsewhere."
 }
 
-Write-Host "=== Preparing gis-server-federation.json ==="
+Write-Host "=== Preparing $FederationJsonName ==="
 
 $templateJsonSource = Join-Path $chefBase $templateJsonSourceRel
 if (Test-Path $templateJsonSource) {
@@ -119,13 +133,13 @@ if (Test-Path $templateJsonSource) {
 }
 
 # If a custom cookbook has been extracted (from the packaged arcgis-cookbook zip),
-# prefer its gis-server-federation.json to override the Esri default.
-$customJsonSource = Join-Path $customRoot 'templates\arcgis-server\11.5\windows\gis-server-federation.json'
+# prefer its federation JSON to override the Esri default.
+$customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$FederationJsonName")
 if (Test-Path $customJsonSource) {
   Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Overrode $templateJsonTarget with custom federation template from $customJsonSource"
 } else {
-  Write-Host "Custom gis-server-federation.json not found under $customRoot; using Esri template."
+  Write-Host "Custom $FederationJsonName not found under $customRoot; using Esri template."
 }
 
 Write-Host "=== Running Cinc to federate GIS Server with Portal ==="
