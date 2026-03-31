@@ -2,7 +2,7 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "ve2HXw)L5NfDLROT",
+        "run_as_password": ":(iXIwX9_+xoN7ZK",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
@@ -11,7 +11,7 @@
         "server": {
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
-            "url": "https://10.163.92.70:6443/arcgis"
+            "url": "https://10.163.11.71:6443/arcgis"
         },
         "data_store": {
             "install_dir": "F:\\ArcGIS\\DataStore",
