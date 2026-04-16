@@ -22,7 +22,7 @@
         },
         "web_adaptor": {
             "install_system_requirements": true,
-            "dotnet_setup_path": "C:\\Software\\Archives\\dotnet-hosting-8.0.11-win.exe",
+            "dotnet_setup_path": "C:\\Software\\Archives\\dotnet-hosting-8.0.21-win.exe",
             "web_deploy_setup_path": "C:\\Software\\Archives\\WebDeploy_amd64_en-US.msi"
         }
     },
