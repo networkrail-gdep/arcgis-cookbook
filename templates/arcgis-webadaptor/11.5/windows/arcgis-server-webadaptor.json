@@ -14,8 +14,8 @@
             "replace_https_binding": true
         },
         "server": {
-            "url": "https://10.163.11.71:6443/arcgis",
-            "wa_url": "https://devgis.networkrail.co.uk.com/server",
+            "url": "https://azarcsvrdev.corp.ukrail.net:6443/arcgis",
+            "wa_url": "https://azarcsvrdev.corp.ukrail.net/server",
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
             "wa_name": "server"
