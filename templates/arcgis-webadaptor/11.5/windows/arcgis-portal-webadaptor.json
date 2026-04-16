@@ -15,7 +15,7 @@
         },
         "portal": {
             "url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
-            "wa_url": "https://devgis.networkrail.co.uk/portal",
+            "wa_url": "https://azarcprtldev.corp.ukrail.net/portal",
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
             "wa_name": "portal"
