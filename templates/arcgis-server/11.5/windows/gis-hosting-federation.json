@@ -1,14 +1,14 @@
 {
     "arcgis": {
         "server": {
-            "private_url": "https://10.163.11.71:6443/arcgis",
-            "web_context_url": "https://10.163.11.71:6443/arcgis",
+            "private_url": "https://azarcsvrdev.corp.ukrail.net:6443/arcgis",
+            "web_context_url": "https://azarcsvrdev.corp.ukrail.net/server",
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
             "is_hosting": true
         },
         "portal": {
-            "private_url": "https://10.163.11.70:7443/arcgis",
+            "private_url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
             "root_cert": "",
