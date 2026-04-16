@@ -1,23 +1,23 @@
 {
     "arcgis": {
         "version": "11.5",
-        "run_as_user": "arcgis",
-        "run_as_password": "<run_as_password>",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "EK82dS7H7U{0rs3q",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
         "iis": {
-            "keystore_file": "C:\\Temp\\keystore.pfx",
-            "keystore_password": "<keystore_password>",
+            "keystore_file": "C:\\Software\\keystore.pfx",
+            "keystore_password": "password5",
             "replace_https_binding": true
         },
         "server": {
-            "url": "https://domain.com:6443/arcgis",
-            "wa_url": "https://domain.com/server",
-            "admin_username": "<server_admin_username>",
-            "admin_password": "<server_admin_password>",
+            "url": "https://10.163.11.71:6443/arcgis",
+            "wa_url": "https://devgis.networkrail.co.uk.com/server",
+            "admin_username": "arcgisadmin",
+            "admin_password": "nXTB*Z[6ab}(mTCX",
             "wa_name": "server"
         },
         "web_adaptor": {
