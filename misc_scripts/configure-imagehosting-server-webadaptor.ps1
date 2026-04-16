@@ -1,5 +1,5 @@
 param(
-  [string]$WebAdaptorJsonName = 'arcgis-federation-server-webadaptor.json'
+  [string]$WebAdaptorJsonName = 'arcgis-imagehosting-server-webadaptor.json'
 )
 
 # --- Variables ---
@@ -120,7 +120,7 @@ if ($customZip) {
   Write-Host (("No custom arcgis-cookbook*.zip found under {0}; using Esri template only.") -f $serverCookbookDir)
 }
 
-Write-Host "=== Running Cinc to configure Federation Server Web Adaptor ==="
+Write-Host "=== Running Cinc to configure Image Hosting Server Web Adaptor ==="
 
 $cincClientCandidates = @(
   'C:\cinc-project\cinc\bin\cinc-client.bat',
