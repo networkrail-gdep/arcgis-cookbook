@@ -15,10 +15,10 @@
         },
         "server": {
             "url": "https://azarcsvrdev.corp.ukrail.net:6443/arcgis",
-            "wa_url": "https://azarcsvrdev.corp.ukrail.net/server",
+            "wa_url": "https://azarcsvrdev.corp.ukrail.net/hosting",
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
-            "wa_name": "server"
+            "wa_name": "hosting"
         },
         "web_adaptor": {
             "install_system_requirements": true,
