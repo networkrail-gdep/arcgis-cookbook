@@ -1,29 +1,29 @@
 {
     "arcgis": {
         "version": "11.5",
-        "run_as_user": "arcgis",
-        "run_as_password": "<run_as_password>",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "w(#IROTWwPt<!Vl}",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
         "iis": {
-            "keystore_file": "C:\\Temp\\keystore.pfx",
-            "keystore_password": "<keystore_password>",
+            "keystore_file": "C:\\Software\\keystore.pfx",
+            "keystore_password": "password5",
             "replace_https_binding": true
         },
         "portal": {
-            "url": "https://domain.com:7443/arcgis",
-            "wa_url": "https://domain.com/portal",
-            "admin_username": "<portal_admin_username>",
-            "admin_password": "<portal_admin_password>",
+            "url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
+            "wa_url": "https://azarcprtldev.corp.ukrail.net/portal",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
             "wa_name": "portal"
         },
         "web_adaptor": {
             "install_system_requirements": true,
-            "dotnet_setup_path": "C:\\Software\\Archives\\dotnet-hosting-8.0.11-win.exe",
-            "web_deploy_setup_path": "C:\\Software\\Archives\\WebDeploy_amd64_en-US.msi",
+            "dotnet_setup_path": "C:\\Software\\Archives\\dotnet-hosting-8.0.21-win.exe",
+            "web_deploy_setup_path": "C:\\Software\\Archives\\webdeploy_amd64_en-US.msi",
             "reindex_portal_content": false
         }
     },

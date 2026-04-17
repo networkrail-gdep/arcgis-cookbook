@@ -2,7 +2,7 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "EK82dS7H7U{0rs3q",
+        "run_as_password": "_MFZ>0_)r3KumDN2",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
@@ -14,8 +14,8 @@
             "replace_https_binding": true
         },
         "server": {
-            "url": "https://azarcsvrdev.corp.ukrail.net:6443/arcgis",
-            "wa_url": "https://azarcsvrdev.corp.ukrail.net/server",
+            "url": "https://azarcfeddev.corp.ukrail.net:6443/arcgis",
+            "wa_url": "https://azarcfeddev.corp.ukrail.net/server",
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
             "wa_name": "server"

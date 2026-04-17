@@ -1,12 +1,27 @@
+param(
+  # Name of the server JSON file under templates\arcgis-server\11.5\windows (e.g. 'arcgis-server.json')
+  [string]$ServerJsonName = 'arcgis-server.json'
+)
+
 # --- Variables ---
 $chefBase         = 'C:\chef'
 $chefCache        = 'C:\chef\cache'
 $chefDownloadRoot = 'C:\Users'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
-$templateJsonTarget = 'C:\chef\arcgis-server.json'
-$serverOkMarker   = 'C:\chef\server_configured.ok'
-$serverTranscript = 'C:\chef\configure-server.transcript.txt'
+
+if ($ServerJsonName.ToLower().EndsWith('.json')) {
+  $serverBaseName = [System.IO.Path]::GetFileNameWithoutExtension($ServerJsonName)
+} else {
+  $serverBaseName = $ServerJsonName
+  $ServerJsonName = "$ServerJsonName.json"
+}
+
+$templateJsonSourceRel = "templates\arcgis-server\11.5\windows\$ServerJsonName"
+$templateJsonTarget = "C:\\chef\\$ServerJsonName"
+$serverOkMarker   = "C:\\chef\\${serverBaseName}_configured.ok"
+$legacyServerOkMarker = 'C:\chef\server_configured.ok'
+$serverTranscript = "C:\\chef\\configure-${serverBaseName}.transcript.txt"
 
 # Start a transcript so background runs write to a log file.
 try {
@@ -14,8 +29,12 @@ try {
 } catch {}
 
 # If we've already successfully configured ArcGIS Server, exit quickly.
-if (Test-Path $serverOkMarker) {
-  Write-Host ("Server configuration marker found at {0}; skipping Cinc run." -f $serverOkMarker)
+if ((Test-Path $serverOkMarker) -or (Test-Path $legacyServerOkMarker)) {
+  if (Test-Path $serverOkMarker) {
+    Write-Host ("Server configuration marker found at {0}; skipping Cinc run." -f $serverOkMarker)
+  } else {
+    Write-Host ("Legacy server configuration marker found at {0}; skipping Cinc run." -f $legacyServerOkMarker)
+  }
   try { Stop-Transcript | Out-Null } catch {}
   return
 }
@@ -89,9 +108,9 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host "=== Creating base arcgis-server.json from Esri template ==="
+Write-Host "=== Creating base $ServerJsonName from Esri template ==="
 
-$templateJsonSource = Join-Path $chefBase 'templates\arcgis-server\11.5\windows\arcgis-server.json'
+$templateJsonSource = Join-Path $chefBase $templateJsonSourceRel
 if (Test-Path $templateJsonSource) {
   Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Copied Esri Server template to $templateJsonTarget"
@@ -99,7 +118,7 @@ if (Test-Path $templateJsonSource) {
   Write-Host "Esri server template not found at $templateJsonSource; continuing without it."
 }
 
-Write-Host "=== Overlaying custom arcgis-server.json from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Overlaying custom $ServerJsonName from arcgis-cookbook zip (if present) ==="
 
 # Look anywhere under $chefDownloadRoot for the custom arcgis-cookbook zip
 $customZip = Get-ChildItem -Path $chefDownloadRoot -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -111,12 +130,12 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
-  $customJsonSource = Join-Path $customRoot 'templates\arcgis-server\11.5\windows\arcgis-server.json'
+  $customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$ServerJsonName")
   if (Test-Path $customJsonSource) {
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
   } else {
-    Write-Host "Custom arcgis-server.json not found in $customRoot; keeping Esri template."
+    Write-Host "Custom $ServerJsonName not found in $customRoot; keeping Esri template."
   }
 } else {
   Write-Host "No custom arcgis-cookbook*.zip found under $chefDownloadRoot; using Esri template only."
@@ -140,7 +159,7 @@ if (-not $clientExePath) {
 }
 
 Push-Location $chefBase
-& $clientExePath -z -c 'C:\chef\client.rb' -j 'C:\chef\arcgis-server.json' -L 'C:\chef\client.log'
+& $clientExePath -z -c 'C:\chef\client.rb' -j $templateJsonTarget -L 'C:\chef\client.log'
 $exitCode = $LASTEXITCODE
 Pop-Location
 
@@ -150,6 +169,10 @@ if ($exitCode -eq 0) {
   # Mark Server as successfully configured so future runs can be skipped.
   New-Item -ItemType File -Path $serverOkMarker -Force | Out-Null
   Write-Host ("Wrote Server configuration marker to {0}" -f $serverOkMarker)
+
+  # Keep legacy marker for compatibility with existing pipeline checks.
+  New-Item -ItemType File -Path $legacyServerOkMarker -Force | Out-Null
+  Write-Host ("Wrote legacy Server configuration marker to {0}" -f $legacyServerOkMarker)
 }
 
 if (Test-Path $clientLogPath) {
