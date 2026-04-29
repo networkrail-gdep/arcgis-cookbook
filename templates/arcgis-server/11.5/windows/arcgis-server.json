@@ -2,14 +2,22 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "EK82dS7H7U{0rs3q",
+        "run_as_password": "qTP_]z(DH[?m=S1C",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
-            "setups": "C:\\Software\\Setups"
+            "setups": "C:\\Software\\Setups",
+            "certificates": "C:\\Software\\Certificates"
         },
+        "hosts": [
+            "azarcsvrtest.corp.ukrail.net, 10.163.106.76",
+            "azarcdstrtest.corp.ukrail.net, 10.163.106.102",
+            "azarcprtltest.corp.ukrail.net, 10.163.106.74",
+            "azarcimgtest.corp.ukrail.net, 10.163.106.73",
+            "azarcfedtest.corp.ukrail.net, 10.163.106.71"
+        ],
         "server": {
-            "install_dir": "F:\\ArcGIS\\Server",
+            "install_dir": "F:\\Programs\\ArcGIS",
             "install_system_requirements": true,
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
@@ -20,8 +28,12 @@
             "directories_root": "F:\\arcgisserver",
             "log_dir": "F:\\arcgisserver\\logs",
             "config_store_type": "FILESYSTEM",
-            "config_store_connection_string": "F:\\arcgisserver\\config-store",
+            "config_store_connection_string": "F:\\arcgisserver",
             "services_dir_enabled": true,
+            "domain_name": "azarcsvrtest.corp.ukrail.net",
+            "hostname": "azarcsvrtest",
+            "root_cert": "C:\\Software\\Certificates\\testgis.pfx",
+            "root_cert_alias": "testgis",
             "system_properties": {
                 "suspendedMachineUnregisterThreshold": -1,
                 "machineSuspendThreshold": 60

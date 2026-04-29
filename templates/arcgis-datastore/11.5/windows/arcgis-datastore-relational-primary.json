@@ -2,23 +2,31 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "NwV_FH>ZFtE-pPLA",
+        "run_as_password": "CZep&LO>=nlzE31y",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
+        "hosts": [
+            "azarcsvrtest.corp.ukrail.net, 10.163.106.76",
+            "azarcdstrtest.corp.ukrail.net, 10.163.106.102",
+            "azarcprtltest.corp.ukrail.net, 10.163.106.74",
+            "azarcimgtest.corp.ukrail.net, 10.163.106.73",
+            "azarcfedtest.corp.ukrail.net, 10.163.106.71"
+        ],
         "server": {
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
-            "url": "https://10.163.11.71:6443/arcgis"
+            "url": "https://azarcsvrtest.corp.ukrail.net:6443/arcgis"
         },
         "data_store": {
-            "install_dir": "F:\\ArcGIS\\DataStore",
+            "install_dir": "F:\\Programs\\ArcGIS\\DataStore",
             "setup_options": "ADDLOCAL=relational",
             "install_system_requirements": true,
             "types": "relational",
             "preferredidentifier": "hostname",
+            "hostidentifier": "azarcdstrtest.corp.ukrail.net",
             "data_dir": "F:\\arcgisdatastore",
             "relational": {
                 "backup_type": "fs",

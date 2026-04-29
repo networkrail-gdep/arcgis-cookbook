@@ -1,18 +1,18 @@
 {
     "arcgis": {
         "server": {
-            "private_url": "https://azarcimgdev.corp.ukrail.net:6443/arcgis",
-            "web_context_url": "https://azarcimgdev.corp.ukrail.net/server",
+            "private_url": "https://azarcimgtest.corp.ukrail.net:6443/arcgis",
+            "web_context_url": "https://testgis.networkrail.co.uk/image",
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
             "is_hosting": false
         },
         "portal": {
-            "private_url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
+            "private_url": "https://azarcprtltest.corp.ukrail.net:7443/portal",
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
-            "root_cert": "",
-            "root_cert_alias": "imagehosting"
+            "root_cert": "C:\\Software\\Certificates\\testgis.pfx",
+            "root_cert_alias": "testgis"
         }
     },
     "run_list": [

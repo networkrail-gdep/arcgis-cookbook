@@ -2,22 +2,31 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "w(#IROTWwPt<!Vl}",
+        "run_as_password": "X[3dFKY$GBOj)k1W",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
-            "setups": "C:\\Software\\Setups"
+            "setups": "C:\\Software\\Setups",
+            "certificates": "C:\\Software\\Certificates"
         },
         "webstyles": {
             "setup_options": "/l*v C:\\chef\\webstyles.log"
         },
+        "hosts": [
+            "azarcsvrtest.corp.ukrail.net, 10.163.106.76",
+            "azarcprtltest.corp.ukrail.net, 10.163.106.74",
+            "azarcimgtest.corp.ukrail.net, 10.163.106.73",
+            "azarcfedtest.corp.ukrail.net, 10.163.106.71",
+            "azarcdstrtest.corp.ukrail.net, 10.163.106.102",
+            "testgis.networkrail.co.uk, 10.163.106.74" 
+        ],
         "portal": {
-            "url": "https://azarcprtldev:7443/arcgis",
-            "install_dir": "F:\\ArcGIS\\Portal",
+            "url": "https://azarcprtltest.corp.ukrail.net:7443/arcgis",
+            "install_dir": "F:\\Programs\\ArcGIS\\Portal",
             "install_system_requirements": true,
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
-            "admin_email": "Nitish.Chandu@networkrail.co.uk",
+            "admin_email": "routeservicesgis@networkrail.co.uk",
             "admin_full_name": "Administrator",
             "admin_description": "Initial account administrator",
             "security_question_index": 1,
@@ -28,15 +37,15 @@
             "enable_debug": false,
             "content_store_type": "fileStore",
             "content_store_provider": "FileSystem",
-            "content_store_connection_string": "F:\\arcgisportal\\content",
+            "content_store_connection_string": "F:\\arcgisportal",
             "object_store": "",
             "authorization_file": "C:\\Software\\AuthorizationFiles\\11.5\\Portal.json",
-            "user_license_type_id": "",
-            "root_cert": "",
-            "root_cert_alias": "rootcert",
+            "user_license_type_id": "creatorUT",
+            "root_cert": "C:\\Software\\Certificates\\testgis.pfx",
+            "root_cert_alias": "testgis",
             "system_properties": {
-                "privatePortalURL": "https://azarcprtldev:7443/arcgis",
-                "WebContextURL": "https://devgis.networkrail.co.uk/portal"
+                "privatePortalURL": "https://azarcprtltest.corp.ukrail.net:7443/arcgis",
+                "WebContextURL": "https://testgis.networkrail.co.uk/portal"
             }
         }
     },
