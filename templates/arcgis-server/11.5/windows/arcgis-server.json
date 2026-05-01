@@ -18,7 +18,7 @@
             "testgis.networkrail.co.uk": "10.163.106.200"
         },
         "server": {
-            "install_dir": "F:\\Programs\\ArcGIS",
+            "install_dir": "F:\\Programs\\ArcGIS\\Server",
             "install_system_requirements": true,
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
