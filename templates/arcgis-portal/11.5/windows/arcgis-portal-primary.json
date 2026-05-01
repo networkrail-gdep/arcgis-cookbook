@@ -37,7 +37,7 @@
             "enable_debug": false,
             "content_store_type": "fileStore",
             "content_store_provider": "FileSystem",
-            "content_store_connection_string": "F:\\arcgisportal",
+            "content_store_connection_string": "\\\\stgdepstorage02test.file.core.windows.net\\stgdepstorage02test-share\\arcgisportal",
             "object_store": "",
             "authorization_file": "C:\\Software\\AuthorizationFiles\\11.5\\Portal.json",
             "user_license_type_id": "creatorUT",
