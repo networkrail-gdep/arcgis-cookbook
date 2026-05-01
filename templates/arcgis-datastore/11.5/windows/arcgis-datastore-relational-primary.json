@@ -8,14 +8,14 @@
             "archives": "C:\\Software\\Archives",
             "setups": "C:\\Software\\Setups"
         },
-        "hosts": [
-            "azarcsvrtest.corp.ukrail.net, 10.163.106.76",
-            "azarcdstrtest.corp.ukrail.net, 10.163.106.102",
-            "azarcprtltest.corp.ukrail.net, 10.163.106.74",
-            "azarcimgtest.corp.ukrail.net, 10.163.106.73",
-            "azarcfedtest.corp.ukrail.net, 10.163.106.71",
-            "testgis.networkrail.co.uk, 10.163.106.200" 
-        ],
+        "hosts": {
+            "azarcsvrtest.corp.ukrail.net": "10.163.106.76",
+            "azarcdstrtest.corp.ukrail.net": "10.163.106.102",
+            "azarcprtltest.corp.ukrail.net": "10.163.106.74",
+            "azarcimgtest.corp.ukrail.net": "10.163.106.73",
+            "azarcfedtest.corp.ukrail.net": "10.163.106.71",
+            "testgis.networkrail.co.uk": "10.163.106.200"
+        },
         "server": {
             "admin_username": "arcgisadmin",
             "admin_password": "nXTB*Z[6ab}(mTCX",
