@@ -11,8 +11,8 @@
             "private_url": "https://azarcprtltest.corp.ukrail.net:7443/portal",
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
-            "root_cert": "C:\\Software\\Certificates\\testgis.pfx",
-            "root_cert_alias": "testgis"
+            "root_cert": "",
+            "root_cert_alias": ""
         }
     },
     "run_list": [
