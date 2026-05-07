@@ -2,7 +2,7 @@
     "arcgis": {
         "version": "11.5",
         "run_as_user": "gdepadmin",
-        "run_as_password": "w(#IROTWwPt<!Vl}",
+        "run_as_password": "X[3dFKY$GBOj)k1W",
         "configure_windows_firewall": true,
         "repository": {
             "archives": "C:\\Software\\Archives",
@@ -14,8 +14,8 @@
             "replace_https_binding": true
         },
         "portal": {
-            "url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
-            "wa_url": "https://azarcprtldev.corp.ukrail.net/portal",
+            "url": "https://azarcprtltest.corp.ukrail.net:7443/portal",
+            "wa_url": "https://azarcprtltest.corp.ukrail.net/portal",
             "admin_username": "portaladmin",
             "admin_password": "nXTBZ6abmTCX2o26",
             "wa_name": "portal"
