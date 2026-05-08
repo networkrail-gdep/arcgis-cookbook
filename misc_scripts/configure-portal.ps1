@@ -19,12 +19,15 @@ $portalTranscript  = 'C:\chef\configure-portal.transcript.txt'
 function Remove-BOM {
   param([string]$FilePath)
   if (Test-Path $FilePath) {
-    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
-    # Remove BOM if present (first 3 bytes: EF BB BF)
-    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
-      $content = $content.Substring(1)
-      # Write back without BOM using UTF8 encoding (no BOM)
-      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
     }
   }
 }
@@ -176,8 +179,9 @@ if ($runAsUser.StartsWith('.\')) {
 
 if ($normalizedRunAsUser -ne $runAsUser) {
   $portalConfig.arcgis.run_as_user = $normalizedRunAsUser
-  $portalConfig | ConvertTo-Json -Depth 100 | Out-File -FilePath $templateJsonTarget -Encoding UTF8 -Force
-  Remove-BOM -FilePath $templateJsonTarget
+  $jsonText = $portalConfig | ConvertTo-Json -Depth 100
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($templateJsonTarget, $jsonText, $utf8NoBom)
   Write-Host ("Normalized run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $normalizedRunAsUser, $templateJsonTarget)
 }
 
