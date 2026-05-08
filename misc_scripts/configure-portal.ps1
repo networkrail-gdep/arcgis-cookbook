@@ -1,3 +1,9 @@
+param(
+  # Portal JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-portal-primary-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  [string]$PortalJsonName = 'arcgis-portal-primary.json'
+)
+
 # --- Variables ---
 $chefBase          = 'C:\chef'
 $chefCache         = 'C:\chef\cache'
@@ -92,7 +98,7 @@ if (-not (Test-Path $cookbooksDir)) {
 
 Write-Host "=== Creating base arcgis-portal.json from Esri template ==="
 
-$templateJsonSource = Join-Path $chefBase 'templates\arcgis-portal\11.5\windows\arcgis-portal-primary.json'
+$templateJsonSource = Join-Path $chefBase ("templates\arcgis-portal\11.5\windows\{0}" -f $PortalJsonName)
 if (Test-Path $templateJsonSource) {
   Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Copied Esri template to $templateJsonTarget"
@@ -111,12 +117,12 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
-  $customJsonSource = Join-Path $customRoot 'templates\arcgis-portal\11.5\windows\arcgis-portal-primary.json'
+  $customJsonSource = Join-Path $customRoot ("templates\arcgis-portal\11.5\windows\{0}" -f $PortalJsonName)
   if (Test-Path $customJsonSource) {
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
   } else {
-    Write-Host "Custom arcgis-portal-primary.json not found in $customRoot; keeping Esri template."
+    Write-Host "Custom $PortalJsonName not found in $customRoot; keeping Esri template."
   }
 } else {
   Write-Host "No custom arcgis-cookbook*.zip found under $portalCookbookDir; using Esri template only."

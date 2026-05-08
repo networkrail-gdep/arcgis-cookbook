@@ -1,0 +1,60 @@
+﻿{
+    "arcgis": {
+        "version": "11.5",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "w(#IROTWwPt<!Vl}",
+        "configure_windows_firewall": true,
+        "repository": {
+            "archives": "C:\\Software\\Archives",
+            "setups": "C:\\Software\\Setups",
+            "certificates": "C:\\Software\\Certificates"
+        },
+        "webstyles": {
+            "setup_options": "/l*v C:\\chef\\webstyles.log"
+        },
+        "hosts": {
+            "azarcprtldev.corp.ukrail.net": "10.163.11.70",
+            "azarcsvrdev.corp.ukrail.net": "10.163.11.71",            
+            "azarcimgdev.corp.ukrail.net": "10.163.11.73",
+            "azarcfeddev.corp.ukrail.net": "10.163.11.75",
+            "azarcdstrdev.corp.ukrail.net": "10.163.11.101",
+            "devgis.networkrail.co.uk": "10.163.11.202"
+        },
+        "portal": {
+            "url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
+            "install_dir": "F:\\Programs\\ArcGIS\\Portal",
+            "install_system_requirements": true,
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
+            "admin_email": "routeservicesgis@networkrail.co.uk",
+            "admin_full_name": "Administrator",
+            "admin_description": "Initial account administrator",
+            "security_question_index": 1,
+            "security_question_answer": "NREsr1arcg1sP0rtal",
+            "data_dir": "F:\\arcgisportal",
+            "log_dir": "F:\\arcgisportal\\logs",
+            "log_level": "WARNING",
+            "enable_debug": false,
+            "content_store_type": "fileStore",
+            "content_store_provider": "FileSystem",
+            "content_store_connection_string": "\\\\stgdepstorage02dev.file.core.windows.net\\stgdepstorage02dev-share\\arcgisportal",
+            "object_store": "",
+            "authorization_file": "C:\\Software\\AuthorizationFiles\\11.5\\Portal.json",
+            "user_license_type_id": "creatorUT",
+            "root_cert": "C:\\Software\\Certificates\\devgis.pfx",
+            "root_cert_alias": "devgis",
+            "system_properties": {
+                "privatePortalURL": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
+                "WebContextURL": "https://devgis.networkrail.co.uk/portal"
+            }
+        }
+    },
+    "run_list": [
+        "recipe[arcgis-enterprise::system]",
+        "recipe[arcgis-enterprise::disable_loopback_check]",
+        "recipe[arcgis-enterprise::install_portal]",
+        "recipe[arcgis-enterprise::webstyles]",
+        "recipe[arcgis-enterprise::portal]"
+    ]
+}
+

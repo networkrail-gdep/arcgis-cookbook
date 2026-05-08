@@ -1,3 +1,9 @@
+param(
+  # Data Store JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-datastore-relational-primary-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  [string]$DatastoreJsonName = 'arcgis-datastore-relational-primary.json'
+)
+
 # --- Variables ---
 $chefBase             = 'C:\chef'
 $chefCache            = 'C:\chef\cache'
@@ -92,7 +98,7 @@ if (-not (Test-Path $cookbooksDir)) {
 
 Write-Host "=== Creating base arcgis-datastore.json from Esri template ==="
 
-$templateJsonSource = Join-Path $chefBase 'templates\arcgis-datastore\11.5\windows\arcgis-datastore-relational-primary.json'
+$templateJsonSource = Join-Path $chefBase ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
 if (Test-Path $templateJsonSource) {
   Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Copied Esri Data Store template to $templateJsonTarget"
@@ -111,12 +117,12 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
-  $customJsonSource = Join-Path $customRoot 'templates\arcgis-datastore\11.5\windows\arcgis-datastore-relational-primary.json'
+  $customJsonSource = Join-Path $customRoot ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
   if (Test-Path $customJsonSource) {
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
   } else {
-    Write-Host "Custom arcgis-datastore-relational-primary.json not found in $customRoot; keeping Esri template."
+    Write-Host "Custom $DatastoreJsonName not found in $customRoot; keeping Esri template."
   }
 } else {
   Write-Host "No custom arcgis-cookbook*.zip found under $datastoreCookbookDir; using Esri template only."

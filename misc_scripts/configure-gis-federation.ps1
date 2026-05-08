@@ -1,5 +1,7 @@
 param(
-  # Name of the federation JSON file under templates\arcgis-server\11.5\windows (e.g. 'gis-server-federation.json', 'imagehosting-federation.json')
+  # Federation JSON template name. Pipeline passes environment-suffixed names (e.g., gis-server-federation-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  # Examples: gis-server-federation.json, imagehosting-federation.json, gis-hosting-federation.json
   [string]$FederationJsonName = 'gis-server-federation.json'
 )
 

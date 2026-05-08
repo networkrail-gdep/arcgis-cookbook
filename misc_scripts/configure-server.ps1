@@ -1,5 +1,7 @@
 param(
-  # Name of the server JSON file under templates\arcgis-server\11.5\windows (e.g. 'arcgis-server.json')
+  # Server JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-server-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  # Examples: arcgis-server.json, arcgis-server-federation-vm.json, arcgis-server-imagehosting-vm.json
   [string]$ServerJsonName = 'arcgis-server.json'
 )
 

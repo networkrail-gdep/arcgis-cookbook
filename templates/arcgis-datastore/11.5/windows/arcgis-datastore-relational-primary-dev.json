@@ -1,0 +1,47 @@
+﻿{
+    "arcgis": {
+        "version": "11.5",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "NwV_FH>ZFtE-pPLA",
+        "configure_windows_firewall": true,
+        "repository": {
+            "archives": "C:\\Software\\Archives",
+            "setups": "C:\\Software\\Setups"
+        },
+        "hosts": {
+            "azarcprtldev.corp.ukrail.net": "10.163.11.70",
+            "azarcsvrdev.corp.ukrail.net": "10.163.11.71",            
+            "azarcimgdev.corp.ukrail.net": "10.163.11.73",
+            "azarcfeddev.corp.ukrail.net": "10.163.11.75",
+            "azarcdstrdev.corp.ukrail.net": "10.163.11.101",
+            "devgis.networkrail.co.uk": "10.163.11.202"
+        },
+        "server": {
+            "admin_username": "arcgisadmin",
+            "admin_password": "nXTB*Z[6ab}(mTCX",
+            "url": "https://azarcsvrdev.corp.ukrail.net:6443/arcgis"
+        },
+        "data_store": {
+            "install_dir": "F:\\Programs\\ArcGIS\\DataStore",
+            "setup_options": "ADDLOCAL=relational",
+            "install_system_requirements": true,
+            "types": "relational",
+            "preferredidentifier": "hostname",
+            "hostidentifier": "azarcdstrdev.corp.ukrail.net",
+            "data_dir": "F:\\arcgisdatastore",
+            "relational": {
+                "backup_type": "fs",
+                "backup_location": "F:\\arcgisbackup\\relational",
+                "disk_threshold_readonly": 5120,
+                "max_connections": 150,
+                "pitr": "disable",
+                "enablessl": true                
+            }
+        }
+    },
+    "run_list": [
+        "recipe[arcgis-enterprise::system]",
+        "recipe[arcgis-enterprise::disable_loopback_check]",
+        "recipe[arcgis-enterprise::datastore]"
+    ]
+}

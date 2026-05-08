@@ -1,4 +1,6 @@
 param(
+  # Server Web Adaptor JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-server-webadaptor-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
   [string]$WebAdaptorJsonName = 'arcgis-server-webadaptor.json'
 )
 
