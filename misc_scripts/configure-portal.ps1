@@ -178,10 +178,23 @@ if ($runAsUser.StartsWith('.\')) {
 }
 
 if ($normalizedRunAsUser -ne $runAsUser) {
+  $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
+  $oldJsonValue = [System.Text.Json.JsonSerializer]::Serialize($runAsUser)
+  $newJsonValue = [System.Text.Json.JsonSerializer]::Serialize($normalizedRunAsUser)
+  $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
+
+  if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
+    $updatedJson = [regex]::Replace($rawJson, $runAsUserPattern, '"run_as_user": ' + $newJsonValue, 1)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($templateJsonTarget, $updatedJson, $utf8NoBom)
+  }
+  else {
+    Write-Error "Unable to safely update run_as_user in $templateJsonTarget. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
+  }
+
   $portalConfig.arcgis.run_as_user = $normalizedRunAsUser
-  $jsonText = $portalConfig | ConvertTo-Json -Depth 100
-  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-  [System.IO.File]::WriteAllText($templateJsonTarget, $jsonText, $utf8NoBom)
   Write-Host ("Normalized run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $normalizedRunAsUser, $templateJsonTarget)
 }
 

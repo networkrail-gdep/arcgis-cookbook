@@ -105,25 +105,21 @@ if ($customZip) {
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
   Write-Host ("Expanded custom cookbook zip from {0} to {1}" -f $customZip.FullName, $customRoot)
 } else {
-  Write-Host "No custom arcgis-cookbook*.zip found under $chefDownloadRoot; using Esri patch template."
-}
-
-Write-Host "=== Preparing $PortalPatchJsonName ==="
-
-$templateJsonSource = Join-Path $chefBase $templateJsonSourceRel
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Write-Host "Copied Esri Portal patch template to $templateJsonTarget"
-} else {
-  Write-Host "Portal patch template not found at $templateJsonSource; aborting."
+  Write-Error "No custom arcgis-cookbook*.zip found under $chefDownloadRoot. Failing execution."
   try { Stop-Transcript | Out-Null } catch {}
-  return
+  exit 1
 }
+
+Write-Host "=== Preparing required custom $PortalPatchJsonName ==="
 
 $customJsonSource = Join-Path $customRoot ("templates\arcgis-portal\11.5\windows\$PortalPatchJsonName")
 if (Test-Path $customJsonSource) {
   Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
-  Write-Host "Overrode $templateJsonTarget with custom patch template from $customJsonSource"
+  Write-Host "Copied required custom patch template from $customJsonSource to $templateJsonTarget"
+} else {
+  Write-Error "Required custom patch template '$PortalPatchJsonName' not found at $customJsonSource. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to apply Portal patch(es) ==="

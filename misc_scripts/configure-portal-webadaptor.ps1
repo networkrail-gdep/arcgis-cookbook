@@ -18,12 +18,15 @@ $templateJsonTarget = ("C:\chef\{0}" -f $WebAdaptorJsonName)
 function Remove-BOM {
   param([string]$FilePath)
   if (Test-Path $FilePath) {
-    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
-    # Remove BOM if present (first 3 bytes: EF BB BF)
-    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
-      $content = $content.Substring(1)
-      # Write back without BOM using UTF8 encoding (no BOM)
-      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
     }
   }
 }
@@ -111,17 +114,7 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host (("=== Creating base {0} from Esri template ===") -f $WebAdaptorJsonName)
-
-$templateJsonSource = Join-Path $chefBase (("templates\arcgis-webadaptor\11.5\windows\{0}") -f $WebAdaptorJsonName)
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Write-Host (("Copied Esri template to {0}") -f $templateJsonTarget)
-} else {
-  Write-Host (("Esri web adaptor template not found at {0}; continuing without it.") -f $templateJsonSource)
-}
-
-Write-Host (("=== Overlaying custom {0} from arcgis-cookbook zip (if present) ===") -f $WebAdaptorJsonName)
+Write-Host (("=== Preparing required custom {0} from arcgis-cookbook zip ===") -f $WebAdaptorJsonName)
 
 $customZip = Get-ChildItem -Path $portalCookbookDir -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($customZip) {
@@ -134,13 +127,19 @@ if ($customZip) {
 
   $customJsonSource = Join-Path $customRoot (("templates\arcgis-webadaptor\11.5\windows\{0}") -f $WebAdaptorJsonName)
   if (Test-Path $customJsonSource) {
+    # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
-    Write-Host (("Overrode {0} with custom template from {1}") -f $templateJsonTarget, $customJsonSource)
+    Remove-BOM -FilePath $templateJsonTarget
+    Write-Host (("Copied required custom template from {0} to {1}") -f $customJsonSource, $templateJsonTarget)
   } else {
-    Write-Host (("Custom {0} not found in {1}; keeping Esri template.") -f $WebAdaptorJsonName, $customRoot)
+    Write-Error (("Required custom template '{0}' not found at {1}. Failing execution.") -f $WebAdaptorJsonName, $customJsonSource)
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
   }
 } else {
-  Write-Host (("No custom arcgis-cookbook*.zip found under {0}; using Esri template only.") -f $portalCookbookDir)
+  Write-Error (("No custom arcgis-cookbook*.zip found under {0}. Failing execution.") -f $portalCookbookDir)
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to configure Portal Web Adaptor ==="

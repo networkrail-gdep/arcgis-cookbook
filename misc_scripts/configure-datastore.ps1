@@ -19,12 +19,15 @@ $datastoreTranscript  = 'C:\chef\configure-datastore.transcript.txt'
 function Remove-BOM {
   param([string]$FilePath)
   if (Test-Path $FilePath) {
-    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
-    # Remove BOM if present (first 3 bytes: EF BB BF)
-    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
-      $content = $content.Substring(1)
-      # Write back without BOM using UTF8 encoding (no BOM)
-      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
     }
   }
 }
@@ -110,18 +113,7 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host "=== Creating base arcgis-datastore.json from Esri template ==="
-
-$templateJsonSource = Join-Path $chefBase ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Remove-BOM -FilePath $templateJsonTarget
-  Write-Host "Copied Esri Data Store template to $templateJsonTarget"
-} else {
-  Write-Host "Esri datastore template not found at $templateJsonSource; continuing without it."
-}
-
-Write-Host "=== Overlaying custom arcgis-datastore.json from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Preparing required custom arcgis-datastore.json from arcgis-cookbook zip ==="
 
 $customZip = Get-ChildItem -Path $datastoreCookbookDir -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($customZip) {
@@ -134,14 +126,19 @@ if ($customZip) {
 
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
   if (Test-Path $customJsonSource) {
+    # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Remove-BOM -FilePath $templateJsonTarget
-    Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
+    Write-Host "Copied required custom template from $customJsonSource to $templateJsonTarget"
   } else {
-    Write-Host "Custom $DatastoreJsonName not found in $customRoot; keeping Esri template."
+    Write-Error "Required custom template '$DatastoreJsonName' not found at $customJsonSource. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
   }
 } else {
-  Write-Host "No custom arcgis-cookbook*.zip found under $datastoreCookbookDir; using Esri template only."
+  Write-Error "No custom arcgis-cookbook*.zip found under $datastoreCookbookDir. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to configure Data Store ==="
