@@ -4,6 +4,7 @@
 Remove UTF-8 BOM from all JSON template files in the arcgis-cookbook templates directory.
 This fixes Chef JSON parsing errors caused by BOM markers.
 
+
 .DESCRIPTION
 Scans all .json files under templates/arcgis-*/*/windows and templates/arcgis-*/*/linux
 and removes UTF-8 BOM (Byte Order Mark) if present. This is necessary because Chef's
