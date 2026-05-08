@@ -12,6 +12,20 @@ $chefDownloadRoot = 'C:\Users'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
 
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+    # Remove BOM if present (first 3 bytes: EF BB BF)
+    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
+      $content = $content.Substring(1)
+      # Write back without BOM using UTF8 encoding (no BOM)
+      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    }
+  }
+}
+
 if ($ServerJsonName.ToLower().EndsWith('.json')) {
   $serverBaseName = [System.IO.Path]::GetFileNameWithoutExtension($ServerJsonName)
 } else {
@@ -135,6 +149,7 @@ if ($customZip) {
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$ServerJsonName")
   if (Test-Path $customJsonSource) {
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
+    Remove-BOM -FilePath $templateJsonTarget
     Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
   } else {
     Write-Host "Custom $ServerJsonName not found in $customRoot; keeping Esri template."

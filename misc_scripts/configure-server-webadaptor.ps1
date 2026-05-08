@@ -13,6 +13,20 @@ $serverCookbookDir  = Join-Path $chefDownloadRoot 'arcgis-server'
 $customZipPattern   = 'arcgis-cookbook*.zip'
 $waBaseName         = [System.IO.Path]::GetFileNameWithoutExtension($WebAdaptorJsonName)
 $templateJsonTarget = ("C:\chef\{0}" -f $WebAdaptorJsonName)
+
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+    # Remove BOM if present (first 3 bytes: EF BB BF)
+    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
+      $content = $content.Substring(1)
+      # Write back without BOM using UTF8 encoding (no BOM)
+      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    }
+  }
+}
 $waOkMarker         = ("C:\chef\{0}_configured.ok" -f $waBaseName)
 $waTranscript       = ("C:\chef\configure-{0}.transcript.txt" -f $waBaseName)
 

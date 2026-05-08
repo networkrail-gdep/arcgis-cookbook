@@ -15,6 +15,20 @@ $templateJsonTarget   = 'C:\chef\arcgis-datastore.json'
 $datastoreOkMarker    = 'C:\chef\datastore_configured.ok'
 $datastoreTranscript  = 'C:\chef\configure-datastore.transcript.txt'
 
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+    # Remove BOM if present (first 3 bytes: EF BB BF)
+    if ($content.Length -gt 0 -and $content[0] -eq [char]0xFEFF) {
+      $content = $content.Substring(1)
+      # Write back without BOM using UTF8 encoding (no BOM)
+      [System.IO.File]::WriteAllText($FilePath, $content, [System.Text.UTF8Encoding]$false)
+    }
+  }
+}
+
 # Start a transcript so background runs write to a log file.
 try {
   Start-Transcript -Path $datastoreTranscript -Append -ErrorAction SilentlyContinue | Out-Null
@@ -101,6 +115,7 @@ Write-Host "=== Creating base arcgis-datastore.json from Esri template ==="
 $templateJsonSource = Join-Path $chefBase ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
 if (Test-Path $templateJsonSource) {
   Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
+  Remove-BOM -FilePath $templateJsonTarget
   Write-Host "Copied Esri Data Store template to $templateJsonTarget"
 } else {
   Write-Host "Esri datastore template not found at $templateJsonSource; continuing without it."
@@ -120,6 +135,7 @@ if ($customZip) {
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
   if (Test-Path $customJsonSource) {
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
+    Remove-BOM -FilePath $templateJsonTarget
     Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
   } else {
     Write-Host "Custom $DatastoreJsonName not found in $customRoot; keeping Esri template."
