@@ -138,6 +138,70 @@ if ($customZip) {
   exit 1
 }
 
+Write-Host "=== Validating Portal run-as account settings in arcgis-portal.json ==="
+
+try {
+  $portalConfig = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8 | ConvertFrom-Json
+} catch {
+  Write-Error ("Unable to parse {0}: {1}" -f $templateJsonTarget, $_.Exception.Message)
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
+}
+
+$runAsUser = [string]$portalConfig.arcgis.run_as_user
+$runAsPassword = [string]$portalConfig.arcgis.run_as_password
+
+if ([string]::IsNullOrWhiteSpace($runAsUser)) {
+  Write-Error "arcgis.run_as_user is missing or empty in $templateJsonTarget. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
+}
+
+if ([string]::IsNullOrWhiteSpace($runAsPassword)) {
+  Write-Error "arcgis.run_as_password is missing or empty in $templateJsonTarget. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
+}
+
+$normalizedRunAsUser = $runAsUser
+$isLocalAccount = $false
+
+if ($runAsUser.StartsWith('.\')) {
+  $isLocalAccount = $true
+} elseif ($runAsUser -notmatch '[\\@]' -and -not $runAsUser.EndsWith('$')) {
+  # Make local service account explicit to avoid ambiguous account resolution on domain-joined VMs.
+  $normalizedRunAsUser = ".\$runAsUser"
+  $isLocalAccount = $true
+}
+
+if ($normalizedRunAsUser -ne $runAsUser) {
+  $portalConfig.arcgis.run_as_user = $normalizedRunAsUser
+  $portalConfig | ConvertTo-Json -Depth 100 | Out-File -FilePath $templateJsonTarget -Encoding UTF8 -Force
+  Remove-BOM -FilePath $templateJsonTarget
+  Write-Host ("Normalized run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $normalizedRunAsUser, $templateJsonTarget)
+}
+
+if ($isLocalAccount) {
+  $localUserName = $normalizedRunAsUser.Substring(2)
+  $localUser = Get-LocalUser -Name $localUserName -ErrorAction SilentlyContinue
+
+  if (-not $localUser) {
+    Write-Error ("Local run-as account '{0}' not found on VM. Failing execution." -f $localUserName)
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
+  }
+
+  try {
+    $securePassword = ConvertTo-SecureString -String $runAsPassword -AsPlainText -Force
+    Set-LocalUser -Name $localUserName -Password $securePassword -ErrorAction Stop
+    Write-Host ("Synchronized password for local run-as account '{0}'." -f $localUserName)
+  } catch {
+    Write-Error ("Failed to set password for local run-as account '{0}': {1}" -f $localUserName, $_.Exception.Message)
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
+  }
+}
+
 Write-Host "=== Running Cinc to configure Portal ==="
 
 $cincClientCandidates = @(
