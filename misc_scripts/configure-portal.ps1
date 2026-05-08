@@ -110,18 +110,7 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host "=== Creating base arcgis-portal.json from Esri template ==="
-
-$templateJsonSource = Join-Path $chefBase ("templates\arcgis-portal\11.5\windows\{0}" -f $PortalJsonName)
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Remove-BOM -FilePath $templateJsonTarget
-  Write-Host "Copied Esri template to $templateJsonTarget"
-} else {
-  Write-Host "Esri portal template not found at $templateJsonSource; continuing without it."
-}
-
-Write-Host "=== Overlaying custom arcgis-portal.json from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Preparing required custom arcgis-portal.json from arcgis-cookbook zip ==="
 
 $customZip = Get-ChildItem -Path $portalCookbookDir -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($customZip) {
@@ -134,14 +123,19 @@ if ($customZip) {
 
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-portal\11.5\windows\{0}" -f $PortalJsonName)
   if (Test-Path $customJsonSource) {
+    # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Remove-BOM -FilePath $templateJsonTarget
-    Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
+    Write-Host "Copied required custom template from $customJsonSource to $templateJsonTarget"
   } else {
-    Write-Host "Custom $PortalJsonName not found in $customRoot; keeping Esri template."
+    Write-Error "Required custom template '$PortalJsonName' not found at $customJsonSource. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
   }
 } else {
-  Write-Host "No custom arcgis-cookbook*.zip found under $portalCookbookDir; using Esri template only."
+  Write-Error "No custom arcgis-cookbook*.zip found under $portalCookbookDir. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to configure Portal ==="
