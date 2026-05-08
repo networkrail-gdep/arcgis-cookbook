@@ -213,36 +213,13 @@ if ($isLocalAccount) {
     $securePassword = ConvertTo-SecureString -String $runAsPassword -AsPlainText -Force
     Set-LocalUser -Name $localUserName -Password $securePassword -ErrorAction Stop
     Enable-LocalUser -Name $localUserName -ErrorAction SilentlyContinue
-    Write-Host ("Synchronized password for local run-as account '{0}'." -f $localUserName)
+    Write-Host ("Synchronized password and enabled local run-as account '{0}'." -f $localUserName)
   } catch {
     Write-Error ("Failed to set password for local run-as account '{0}': {1}" -f $localUserName, $_.Exception.Message)
     try { Stop-Transcript | Out-Null } catch {}
     exit 1
   }
-
-  # If Portal service already exists, pre-apply credentials and verify startup now.
-  # This avoids waiting until Cinc convergence to discover a logon failure (1069).
-  $portalService = Get-Service -Name 'Portal for ArcGIS' -ErrorAction SilentlyContinue
-  if ($portalService) {
-    $scObjArg = ('obj= "{0}"' -f $normalizedRunAsUser)
-    $scPwdArg = ('password= "{0}"' -f $runAsPassword)
-    & sc.exe config "Portal for ArcGIS" $scObjArg $scPwdArg | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-      Write-Error ("Failed to update 'Portal for ArcGIS' service logon account to '{0}'." -f $normalizedRunAsUser)
-      try { Stop-Transcript | Out-Null } catch {}
-      exit 1
-    }
-
-    try {
-      Start-Service -Name 'Portal for ArcGIS' -ErrorAction Stop
-      Write-Host "Preflight start succeeded for 'Portal for ArcGIS' service with configured credentials."
-      Stop-Service -Name 'Portal for ArcGIS' -ErrorAction SilentlyContinue
-    } catch {
-      Write-Error ("Preflight start failed for 'Portal for ArcGIS' service: {0}" -f $_.Exception.Message)
-      try { Stop-Transcript | Out-Null } catch {}
-      exit 1
-    }
-  }
+  # Cinc's update_account action will apply the credentials to the service; no need to pre-apply here.
 }
 
 Write-Host "=== Running Cinc to configure Portal ==="
