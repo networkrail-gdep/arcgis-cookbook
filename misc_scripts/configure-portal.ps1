@@ -179,8 +179,9 @@ if ($runAsUser.StartsWith('.\')) {
 
 if ($normalizedRunAsUser -ne $runAsUser) {
   $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
-  $oldJsonValue = [System.Text.Json.JsonSerializer]::Serialize($runAsUser)
-  $newJsonValue = [System.Text.Json.JsonSerializer]::Serialize($normalizedRunAsUser)
+  # Use PowerShell-native JSON encoding so this works on Windows PowerShell 5.1.
+  $oldJsonValue = ($runAsUser | ConvertTo-Json -Compress).Trim()
+  $newJsonValue = ($normalizedRunAsUser | ConvertTo-Json -Compress).Trim()
   $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
 
   if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
@@ -223,7 +224,9 @@ if ($isLocalAccount) {
   # This avoids waiting until Cinc convergence to discover a logon failure (1069).
   $portalService = Get-Service -Name 'Portal for ArcGIS' -ErrorAction SilentlyContinue
   if ($portalService) {
-    & sc.exe config "Portal for ArcGIS" "obj= $normalizedRunAsUser" "password= $runAsPassword" | Out-Null
+    $scObjArg = ('obj= "{0}"' -f $normalizedRunAsUser)
+    $scPwdArg = ('password= "{0}"' -f $runAsPassword)
+    & sc.exe config "Portal for ArcGIS" $scObjArg $scPwdArg | Out-Null
     if ($LASTEXITCODE -ne 0) {
       Write-Error ("Failed to update 'Portal for ArcGIS' service logon account to '{0}'." -f $normalizedRunAsUser)
       try { Stop-Transcript | Out-Null } catch {}
