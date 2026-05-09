@@ -172,13 +172,13 @@ $portalInstallDir = [string]$portalConfig.arcgis.portal.install_dir
 $configureSvcAccountBat = if ($portalInstallDir) { Join-Path $portalInstallDir 'tools\ConfigUtility\configureserviceaccount.bat' } else { $null }
 
 if ($configureSvcAccountBat -and -not (Test-Path $configureSvcAccountBat)) {
-  Write-Host ("Portal config utility not found at {0}; cleaning stale Portal uninstall registrations." -f $configureSvcAccountBat)
+  Write-Host ("Portal config utility not found at {0}; cleaning ALL stale Portal registry/product code entries and install directory." -f $configureSvcAccountBat)
 
+  # Remove Portal uninstall keys (32/64-bit)
   $uninstallRoots = @(
     'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
     'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
   )
-
   foreach ($root in $uninstallRoots) {
     Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object {
       try {
@@ -187,9 +187,49 @@ if ($configureSvcAccountBat -and -not (Test-Path $configureSvcAccountBat)) {
           Write-Host ("Removing stale uninstall key: {0}" -f $_.PSPath)
           Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
         }
-      } catch {
+      } catch {}
+    }
+  }
+
+  # Remove Portal product code keys (32/64-bit)
+  $portalProductCodes = @(
+    '{1B8C6B6B-7B6B-4B6B-8B6B-6B6B6B6B6B6B}', # Example, replace with actual Portal product codes if known
+    '{A18E396B-7B6B-4B6B-8B6B-6B6B6B6B6B6B}'  # Add more as needed
+  )
+  $productRoots = @(
+    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products',
+    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products'
+  )
+  foreach ($root in $productRoots) {
+    Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object {
+      $keyPath = $_.PSPath
+      foreach ($code in $portalProductCodes) {
+        if ($keyPath -like "*${code.Replace('-', '')}*") {
+          Write-Host ("Removing stale product code key: {0}" -f $keyPath)
+          Remove-Item -Path $keyPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
       }
     }
+  }
+
+  # Remove Portal ESRI registry keys (32/64-bit)
+  $esriRoots = @(
+    'HKLM:\SOFTWARE\ESRI',
+    'HKLM:\SOFTWARE\WOW6432Node\ESRI'
+  )
+  foreach ($root in $esriRoots) {
+    Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object {
+      if ($_.PSChildName -like '*Portal*') {
+        Write-Host ("Removing stale ESRI Portal registry key: {0}" -f $_.PSPath)
+        Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+      }
+    }
+  }
+
+  # Remove Portal install directory if present
+  if ($portalInstallDir -and (Test-Path $portalInstallDir)) {
+    Write-Host ("Removing stale Portal install directory: {0}" -f $portalInstallDir)
+    Remove-Item -Path $portalInstallDir -Recurse -Force -ErrorAction SilentlyContinue
   }
 }
 
