@@ -166,41 +166,19 @@ if ([string]::IsNullOrWhiteSpace($runAsPassword)) {
   exit 1
 }
 
-$normalizedRunAsUser = $runAsUser
-$isLocalAccount = $false
-
-if ($runAsUser.StartsWith('.\')) {
-  $isLocalAccount = $true
-} elseif ($runAsUser -notmatch '[\\@]' -and -not $runAsUser.EndsWith('$')) {
-  # Make local service account explicit to avoid ambiguous account resolution on domain-joined VMs.
-  $normalizedRunAsUser = ".\$runAsUser"
-  $isLocalAccount = $true
-}
-
-if ($normalizedRunAsUser -ne $runAsUser) {
-  $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
-  # Use PowerShell-native JSON encoding so this works on Windows PowerShell 5.1.
-  $oldJsonValue = ($runAsUser | ConvertTo-Json -Compress).Trim()
-  $newJsonValue = ($normalizedRunAsUser | ConvertTo-Json -Compress).Trim()
-  $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
-
-  if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
-    $updatedJson = [regex]::Replace($rawJson, $runAsUserPattern, '"run_as_user": ' + $newJsonValue, 1)
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($templateJsonTarget, $updatedJson, $utf8NoBom)
-  }
-  else {
-    Write-Error "Unable to safely update run_as_user in $templateJsonTarget. Failing execution."
-    try { Stop-Transcript | Out-Null } catch {}
-    exit 1
-  }
-
-  $portalConfig.arcgis.run_as_user = $normalizedRunAsUser
-  Write-Host ("Normalized run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $normalizedRunAsUser, $templateJsonTarget)
-}
+$isLocalAccount = ($runAsUser -notmatch '@' -and -not $runAsUser.EndsWith('$') -and ($runAsUser -notmatch '\\' -or $runAsUser.StartsWith('.\') -or $runAsUser.StartsWith("$env:COMPUTERNAME\")))
 
 if ($isLocalAccount) {
-  $localUserName = $normalizedRunAsUser.Substring(2)
+  if ($runAsUser.StartsWith('.\')) {
+    $localUserName = $runAsUser.Substring(2)
+  }
+  elseif ($runAsUser.StartsWith("$env:COMPUTERNAME\")) {
+    $localUserName = $runAsUser.Substring($env:COMPUTERNAME.Length + 1)
+  }
+  else {
+    $localUserName = $runAsUser
+  }
+
   $localUser = Get-LocalUser -Name $localUserName -ErrorAction SilentlyContinue
 
   if (-not $localUser) {
