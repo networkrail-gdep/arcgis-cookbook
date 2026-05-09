@@ -166,17 +166,44 @@ if ([string]::IsNullOrWhiteSpace($runAsPassword)) {
   exit 1
 }
 
-$isLocalAccount = ($runAsUser -notmatch '@' -and -not $runAsUser.EndsWith('$') -and ($runAsUser -notmatch '\\' -or $runAsUser.StartsWith('.\') -or $runAsUser.StartsWith("$env:COMPUTERNAME\")))
+$resolvedRunAsUser = $runAsUser
 
-if ($isLocalAccount) {
-  if ($runAsUser.StartsWith('.\')) {
-    $localUserName = $runAsUser.Substring(2)
-  }
-  elseif ($runAsUser.StartsWith("$env:COMPUTERNAME\")) {
-    $localUserName = $runAsUser.Substring($env:COMPUTERNAME.Length + 1)
+# Disambiguate bare local usernames on domain-joined VMs.
+# Use MACHINE\user to keep Windows account resolution local without using .\user
+# (which previously caused owner SID mapping issues in some Chef resources).
+if ($runAsUser -notmatch '@' -and -not $runAsUser.EndsWith('$') -and $runAsUser -notmatch '\\') {
+  $resolvedRunAsUser = "$env:COMPUTERNAME\$runAsUser"
+
+  $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
+  $oldJsonValue = ($runAsUser | ConvertTo-Json -Compress).Trim()
+  $newJsonValue = ($resolvedRunAsUser | ConvertTo-Json -Compress).Trim()
+  $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
+
+  if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
+    $updatedJson = [regex]::Replace($rawJson, $runAsUserPattern, '"run_as_user": ' + $newJsonValue, 1)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($templateJsonTarget, $updatedJson, $utf8NoBom)
+    $portalConfig.arcgis.run_as_user = $resolvedRunAsUser
+    Write-Host ("Qualified run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $resolvedRunAsUser, $templateJsonTarget)
   }
   else {
-    $localUserName = $runAsUser
+    Write-Error "Unable to safely update run_as_user in $templateJsonTarget. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
+  }
+}
+
+$isLocalAccount = ($resolvedRunAsUser -notmatch '@' -and -not $resolvedRunAsUser.EndsWith('$') -and ($resolvedRunAsUser -notmatch '\\' -or $resolvedRunAsUser.StartsWith('.\') -or $resolvedRunAsUser.StartsWith("$env:COMPUTERNAME\")))
+
+if ($isLocalAccount) {
+  if ($resolvedRunAsUser.StartsWith('.\')) {
+    $localUserName = $resolvedRunAsUser.Substring(2)
+  }
+  elseif ($resolvedRunAsUser.StartsWith("$env:COMPUTERNAME\")) {
+    $localUserName = $resolvedRunAsUser.Substring($env:COMPUTERNAME.Length + 1)
+  }
+  else {
+    $localUserName = $resolvedRunAsUser
   }
 
   $localUser = Get-LocalUser -Name $localUserName -ErrorAction SilentlyContinue
