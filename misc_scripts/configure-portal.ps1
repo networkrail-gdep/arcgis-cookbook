@@ -166,6 +166,33 @@ if ([string]::IsNullOrWhiteSpace($runAsPassword)) {
   exit 1
 }
 
+# If the Portal install footprint is missing but stale product registration exists,
+# ArcGIS cookbook may incorrectly execute update_account before install and fail.
+$portalInstallDir = [string]$portalConfig.arcgis.portal.install_dir
+$configureSvcAccountBat = if ($portalInstallDir) { Join-Path $portalInstallDir 'tools\ConfigUtility\configureserviceaccount.bat' } else { $null }
+
+if ($configureSvcAccountBat -and -not (Test-Path $configureSvcAccountBat)) {
+  Write-Host ("Portal config utility not found at {0}; cleaning stale Portal uninstall registrations." -f $configureSvcAccountBat)
+
+  $uninstallRoots = @(
+    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+  )
+
+  foreach ($root in $uninstallRoots) {
+    Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object {
+      try {
+        $entry = Get-ItemProperty $_.PSPath -ErrorAction Stop
+        if ($entry.DisplayName -like 'Portal for ArcGIS*') {
+          Write-Host ("Removing stale uninstall key: {0}" -f $_.PSPath)
+          Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+      } catch {
+      }
+    }
+  }
+}
+
 $resolvedRunAsUser = $runAsUser
 
 # Disambiguate bare local usernames on domain-joined VMs.
