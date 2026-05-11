@@ -42,7 +42,7 @@ function Resolve-AccountSid {
   $candidates = [System.Collections.Generic.List[string]]::new()
   $candidates.Add($AccountName)
 
-  if ($AccountName.StartsWith('.\\')) {
+  if ($AccountName.StartsWith('.\')) {
     $candidates.Add("$env:COMPUTERNAME\" + $AccountName.Substring(2))
   }
 
@@ -274,7 +274,7 @@ $resolvedRunAsUser = $runAsUser
 # Disambiguate bare local usernames on domain-joined VMs.
 # Use MACHINE\user to keep Windows account resolution local without using .\user
 # (which previously caused owner SID mapping issues in some Chef resources).
-if ($runAsUser.StartsWith('.\\')) {
+if ($runAsUser.StartsWith('.\')) {
   $resolvedRunAsUser = "$env:COMPUTERNAME\" + $runAsUser.Substring(2)
 
   $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
