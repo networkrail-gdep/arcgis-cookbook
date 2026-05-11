@@ -207,11 +207,36 @@ if ([string]::IsNullOrWhiteSpace($runAsPassword)) {
 $portalInstallDir = [string]$portalConfig.arcgis.portal.install_dir
 $configureSvcAccountBat = if ($portalInstallDir) { Join-Path $portalInstallDir 'tools\ConfigUtility\configureserviceaccount.bat' } else { $null }
 
-# Check if configureserviceaccount.bat exists
-if ($configureSvcAccountBat -and (Test-Path $configureSvcAccountBat)) {
-    Write-Host "ConfigUtility found at $configureSvcAccountBat. Proceeding with update_account logic."
+function Test-ConfigServiceAccountUtility {
+  param(
+    [string]$UtilityPath
+  )
+
+  if ([string]::IsNullOrWhiteSpace($UtilityPath) -or -not (Test-Path $UtilityPath)) {
+    return $false
+  }
+
+  # Probe the utility in the same process model Cinc/Chef uses.
+  # A partial/corrupt install can leave the bat file present but still un-runnable.
+  $probeOutput = & cmd.exe /C "\"$UtilityPath\" --help" 2>&1
+  $probeText = ($probeOutput | Out-String)
+
+  if ($LASTEXITCODE -eq 9009) {
+    return $false
+  }
+
+  if ($probeText -match 'The system cannot find the file specified\.') {
+    return $false
+  }
+
+  return $true
+}
+
+# Check if configureserviceaccount.bat is callable (not just present).
+if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath $configureSvcAccountBat)) {
+    Write-Host "ConfigUtility is callable at $configureSvcAccountBat. Proceeding with update_account logic."
 } else {
-    Write-Host "ConfigUtility not found at $configureSvcAccountBat. Cleaning stale Portal registry/product code entries and install directory."
+    Write-Host "ConfigUtility is missing or not callable at $configureSvcAccountBat. Cleaning stale Portal registry/product code entries and install directory."
 
     # Collect Portal product codes from uninstall keys before cleanup.
     $detectedPortalProductCodes = New-Object System.Collections.Generic.List[string]
