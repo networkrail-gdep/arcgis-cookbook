@@ -238,9 +238,6 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
 } else {
     Write-Host "ConfigUtility is missing or not callable at $configureSvcAccountBat. Cleaning stale Portal registry/product code entries and install directory."
 
-    # Collect Portal product codes from uninstall keys before cleanup.
-    $detectedPortalProductCodes = New-Object System.Collections.Generic.List[string]
-
     # Remove Portal uninstall keys (32/64-bit)
     $uninstallRoots = @(
         'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
@@ -251,14 +248,6 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
             try {
                 $entry = Get-ItemProperty $_.PSPath -ErrorAction Stop
                 if ($entry.DisplayName -like 'Portal for ArcGIS*') {
-                    if ($entry.PSChildName -match '^\{[0-9A-Fa-f\-]{36}\}$') {
-                        $detectedPortalProductCodes.Add($entry.PSChildName.ToUpperInvariant())
-                    }
-
-                    if ($entry.UninstallString -and $entry.UninstallString -match '\{[0-9A-Fa-f\-]{36}\}') {
-                        $detectedPortalProductCodes.Add($Matches[0].ToUpperInvariant())
-                    }
-
                     Write-Host ("Removing stale uninstall key: {0}" -f $_.PSPath)
                     Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
                 }
@@ -266,29 +255,33 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
         }
     }
 
-    $portalProductCodes = $detectedPortalProductCodes | Select-Object -Unique
-
-    # Remove Portal product code keys (32/64-bit) if discovered.
+          # Remove Windows Installer product entries by ProductName/DisplayName metadata.
+          # Installer product key names are packed GUIDs, so matching by GUID text is unreliable.
     $productRoots = @(
         'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products',
         'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products'
     )
 
-    if ($portalProductCodes.Count -gt 0) {
-        foreach ($root in $productRoots) {
+          foreach ($root in $productRoots) {
             Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object {
-                $keyPath = $_.PSPath
-                foreach ($code in $portalProductCodes) {
-                    $packedCode = $code.Replace('{', '').Replace('}', '').Replace('-', '')
-                    if ($keyPath -like "*${packedCode}*") {
-                        Write-Host ("Removing stale product code key: {0}" -f $keyPath)
-                        Remove-Item -Path $keyPath -Recurse -Force -ErrorAction SilentlyContinue
-                    }
+              try {
+                $installPropsPath = Join-Path $_.PSPath 'InstallProperties'
+                $nameSource = ''
+
+                if (Test-Path $installPropsPath) {
+                  $props = Get-ItemProperty -Path $installPropsPath -ErrorAction SilentlyContinue
+                  if ($props) {
+                    if ($props.DisplayName) { $nameSource = [string]$props.DisplayName }
+                    elseif ($props.ProductName) { $nameSource = [string]$props.ProductName }
+                  }
                 }
+
+                if ($nameSource -like 'Portal for ArcGIS*') {
+                  Write-Host ("Removing stale installer product key: {0}" -f $_.PSPath)
+                  Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+                }
+              } catch {}
             }
-        }
-    } else {
-        Write-Host 'No Portal product GUIDs discovered in uninstall keys; skipping installer product key cleanup.'
     }
 
     # Remove Portal ESRI registry keys (32/64-bit)
@@ -303,6 +296,20 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
                 Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
+    }
+
+    # Remove stale Portal Windows services if present.
+    foreach ($serviceName in @('Portal for ArcGIS', 'ArcGIS Portal')) {
+      $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+      if ($svc) {
+        Write-Host ("Deleting stale service: {0}" -f $serviceName)
+        try {
+          if ($svc.Status -ne 'Stopped') {
+            Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
+          }
+        } catch {}
+        & sc.exe delete "$serviceName" | Out-Null
+      }
     }
 
     # Remove Portal install directory if present
