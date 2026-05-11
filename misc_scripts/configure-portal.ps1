@@ -320,30 +320,16 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
 
     # Ensure Cinc does not attempt update_account on a stale footprint and forces install flow.
     # update_account is guarded by run_as_msa and product_installed?(portal.product_code).
-    $portalProductCode = [string]$portalConfig.arcgis.portal.product_code
-    $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
+    $sentinelProductCode = '{00000000-0000-0000-0000-000000000000}'
+    $portalConfig.arcgis.run_as_msa = $true
+    $portalConfig.arcgis.portal.product_code = $sentinelProductCode
 
-    if ([regex]::IsMatch($rawJson, '"run_as_msa"\s*:\s*(true|false)')) {
-      $rawJson = [regex]::Replace($rawJson, '"run_as_msa"\s*:\s*(true|false)', '"run_as_msa": true', 1)
-      $portalConfig.arcgis.run_as_msa = $true
-      Write-Host 'Set arcgis.run_as_msa=true in run JSON to skip update_account on stale install state.'
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($portalProductCode)) {
-      $oldCodeJson = ($portalProductCode | ConvertTo-Json -Compress).Trim()
-      $sentinelProductCode = '{00000000-0000-0000-0000-000000000000}'
-      $newCodeJson = ($sentinelProductCode | ConvertTo-Json -Compress).Trim()
-      $productCodePattern = '"product_code"\s*:\s*' + [regex]::Escape($oldCodeJson)
-
-      if ([regex]::IsMatch($rawJson, $productCodePattern)) {
-        $rawJson = [regex]::Replace($rawJson, $productCodePattern, '"product_code": ' + $newCodeJson, 1)
-        $portalConfig.arcgis.portal.product_code = $sentinelProductCode
-        Write-Host ("Replaced Portal product_code with sentinel {0} to prevent stale product_installed? matches." -f $sentinelProductCode)
-      }
-    }
-
+    $jsonOut = $portalConfig | ConvertTo-Json -Depth 64
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($templateJsonTarget, $rawJson, $utf8NoBom)
+    [System.IO.File]::WriteAllText($templateJsonTarget, $jsonOut, $utf8NoBom)
+
+    Write-Host 'Set arcgis.run_as_msa=true in run JSON to skip update_account on stale install state.'
+    Write-Host ("Set arcgis.portal.product_code to sentinel {0} to prevent stale product_installed? matches." -f $sentinelProductCode)
 }
 
 $resolvedRunAsUser = $runAsUser
@@ -452,6 +438,13 @@ if ($sidResolution.Account -ne $resolvedRunAsUser) {
 }
 
 Write-Host ("Validated run_as_user SID mapping: {0} -> {1}" -f $resolvedRunAsUser, $sidResolution.Sid)
+
+try {
+  $effectiveConfig = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8 | ConvertFrom-Json
+  Write-Host ("Effective JSON before Cinc: run_as_msa={0}; portal.product_code={1}; portal.install_dir={2}" -f $effectiveConfig.arcgis.run_as_msa, $effectiveConfig.arcgis.portal.product_code, $effectiveConfig.arcgis.portal.install_dir)
+} catch {
+  Write-Host ("Unable to read effective JSON before Cinc: {0}" -f $_.Exception.Message)
+}
 
 Write-Host "=== Running Cinc to configure Portal ==="
 
