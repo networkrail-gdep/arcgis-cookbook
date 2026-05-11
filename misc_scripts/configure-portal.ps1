@@ -32,6 +32,42 @@ function Remove-BOM {
   }
 }
 
+# Resolve an account name to SID, accounting for local shorthand variants.
+function Resolve-AccountSid {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$AccountName
+  )
+
+  $candidates = [System.Collections.Generic.List[string]]::new()
+  $candidates.Add($AccountName)
+
+  if ($AccountName.StartsWith('.\\')) {
+    $candidates.Add("$env:COMPUTERNAME\" + $AccountName.Substring(2))
+  }
+
+  if ($AccountName -notmatch '@' -and -not $AccountName.EndsWith('$') -and $AccountName -notmatch '\\') {
+    $candidates.Add("$env:COMPUTERNAME\\$AccountName")
+  }
+
+  foreach ($candidate in ($candidates | Select-Object -Unique)) {
+    try {
+      $sid = ([System.Security.Principal.NTAccount]$candidate).Translate([System.Security.Principal.SecurityIdentifier]).Value
+      return [PSCustomObject]@{
+        Success = $true
+        Account = $candidate
+        Sid = $sid
+      }
+    } catch {}
+  }
+
+  return [PSCustomObject]@{
+    Success = $false
+    Account = $AccountName
+    Sid = $null
+  }
+}
+
 # Start a transcript so background runs write to a log file.
 try {
   Start-Transcript -Path $portalTranscript -Append -ErrorAction SilentlyContinue | Out-Null
@@ -238,7 +274,28 @@ $resolvedRunAsUser = $runAsUser
 # Disambiguate bare local usernames on domain-joined VMs.
 # Use MACHINE\user to keep Windows account resolution local without using .\user
 # (which previously caused owner SID mapping issues in some Chef resources).
-if ($runAsUser -notmatch '@' -and -not $runAsUser.EndsWith('$') -and $runAsUser -notmatch '\\') {
+if ($runAsUser.StartsWith('.\\')) {
+  $resolvedRunAsUser = "$env:COMPUTERNAME\" + $runAsUser.Substring(2)
+
+  $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
+  $oldJsonValue = ($runAsUser | ConvertTo-Json -Compress).Trim()
+  $newJsonValue = ($resolvedRunAsUser | ConvertTo-Json -Compress).Trim()
+  $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
+
+  if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
+    $updatedJson = [regex]::Replace($rawJson, $runAsUserPattern, '"run_as_user": ' + $newJsonValue, 1)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($templateJsonTarget, $updatedJson, $utf8NoBom)
+    $portalConfig.arcgis.run_as_user = $resolvedRunAsUser
+    Write-Host ("Normalized local run_as_user from '{0}' to '{1}' in {2}" -f $runAsUser, $resolvedRunAsUser, $templateJsonTarget)
+  }
+  else {
+    Write-Error "Unable to safely update run_as_user in $templateJsonTarget. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
+  }
+}
+elseif ($runAsUser -notmatch '@' -and -not $runAsUser.EndsWith('$') -and $runAsUser -notmatch '\\') {
   $resolvedRunAsUser = "$env:COMPUTERNAME\$runAsUser"
 
   $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
@@ -293,6 +350,31 @@ if ($isLocalAccount) {
   }
   # Cinc's update_account action will apply the credentials to the service; no need to pre-apply here.
 }
+
+$sidResolution = Resolve-AccountSid -AccountName $resolvedRunAsUser
+if (-not $sidResolution.Success) {
+  Write-Error ("run_as_user '{0}' cannot be translated to a Windows SID. This causes Chef owner/ACL operations to fail with error 1332. Verify account context (local vs domain) and account integrity, then retry." -f $resolvedRunAsUser)
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
+}
+
+if ($sidResolution.Account -ne $resolvedRunAsUser) {
+  $rawJson = Get-Content -Path $templateJsonTarget -Raw -Encoding UTF8
+  $oldJsonValue = ($resolvedRunAsUser | ConvertTo-Json -Compress).Trim()
+  $newJsonValue = ($sidResolution.Account | ConvertTo-Json -Compress).Trim()
+  $runAsUserPattern = '"run_as_user"\s*:\s*' + [regex]::Escape($oldJsonValue)
+
+  if ([regex]::IsMatch($rawJson, $runAsUserPattern)) {
+    $updatedJson = [regex]::Replace($rawJson, $runAsUserPattern, '"run_as_user": ' + $newJsonValue, 1)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($templateJsonTarget, $updatedJson, $utf8NoBom)
+    $resolvedRunAsUser = $sidResolution.Account
+    $portalConfig.arcgis.run_as_user = $resolvedRunAsUser
+    Write-Host ("Updated run_as_user to SID-resolvable identity '{0}' in {1}" -f $resolvedRunAsUser, $templateJsonTarget)
+  }
+}
+
+Write-Host ("Validated run_as_user SID mapping: {0} -> {1}" -f $resolvedRunAsUser, $sidResolution.Sid)
 
 Write-Host "=== Running Cinc to configure Portal ==="
 
