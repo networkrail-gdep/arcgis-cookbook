@@ -321,6 +321,15 @@ if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath 
     # Ensure Cinc does not attempt update_account on a stale footprint and forces install flow.
     # update_account is guarded by run_as_msa and product_installed?(portal.product_code).
     $sentinelProductCode = '{00000000-0000-0000-0000-000000000000}'
+
+    if (-not ($portalConfig.arcgis.PSObject.Properties.Name -contains 'run_as_msa')) {
+      $portalConfig.arcgis | Add-Member -MemberType NoteProperty -Name 'run_as_msa' -Value $false
+    }
+
+    if (-not ($portalConfig.arcgis.portal.PSObject.Properties.Name -contains 'product_code')) {
+      $portalConfig.arcgis.portal | Add-Member -MemberType NoteProperty -Name 'product_code' -Value ''
+    }
+
     $portalConfig.arcgis.run_as_msa = $true
     $portalConfig.arcgis.portal.product_code = $sentinelProductCode
 
