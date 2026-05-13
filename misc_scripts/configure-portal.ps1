@@ -280,9 +280,47 @@ function Test-ConfigServiceAccountUtility {
   return $true
 }
 
+function Test-ConfigServiceAccountUpdate {
+  param(
+    [string]$UtilityPath,
+    [string]$Username,
+    [string]$Password
+  )
+
+  if ([string]::IsNullOrWhiteSpace($UtilityPath) -or -not (Test-Path $UtilityPath)) {
+    return $false
+  }
+
+  if ([string]::IsNullOrWhiteSpace($Username) -or [string]::IsNullOrWhiteSpace($Password)) {
+    return $false
+  }
+
+  # Run the same command shape Chef uses. If this fails, update_account will fail too.
+  $probeOutput = & cmd.exe /C "\"$UtilityPath\" --username \"$Username\" --password \"$Password\"" 2>&1
+  $probeText = ($probeOutput | Out-String).Trim()
+
+  if ($LASTEXITCODE -eq 0) {
+    return $true
+  }
+
+  if (-not [string]::IsNullOrWhiteSpace($probeText)) {
+    Write-Host ("ConfigUtility update preflight failed with exit code {0}: {1}" -f $LASTEXITCODE, ($probeText -replace "`r?`n", ' '))
+  }
+  else {
+    Write-Host ("ConfigUtility update preflight failed with exit code {0}." -f $LASTEXITCODE)
+  }
+
+  return $false
+}
+
 # Check if configureserviceaccount.bat is callable (not just present).
+$configUtilityHealthy = $false
 if ($configureSvcAccountBat -and (Test-ConfigServiceAccountUtility -UtilityPath $configureSvcAccountBat)) {
-    Write-Host "ConfigUtility is callable at $configureSvcAccountBat. Proceeding with update_account logic."
+  $configUtilityHealthy = Test-ConfigServiceAccountUpdate -UtilityPath $configureSvcAccountBat -Username $runAsUser -Password $runAsPassword
+}
+
+if ($configUtilityHealthy) {
+    Write-Host "ConfigUtility preflight succeeded at $configureSvcAccountBat. Proceeding with update_account logic."
 } else {
     Write-Host "ConfigUtility is missing or not callable at $configureSvcAccountBat. Cleaning stale Portal registry/product code entries and install directory."
 
