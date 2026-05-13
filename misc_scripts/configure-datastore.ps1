@@ -125,6 +125,14 @@ if ($customZip) {
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
+  if (-not (Test-Path $customJsonSource)) {
+    Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$DatastoreJsonName' within $customRoot..."
+    $found = Get-ChildItem -Path $customRoot -Filter $DatastoreJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
     # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force

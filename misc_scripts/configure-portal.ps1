@@ -161,6 +161,14 @@ if ($customZip) {
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-portal\11.5\windows\{0}" -f $PortalJsonName)
+  if (-not (Test-Path $customJsonSource)) {
+    Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$PortalJsonName' within $customRoot..."
+    $found = Get-ChildItem -Path $customRoot -Filter $PortalJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
     # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force

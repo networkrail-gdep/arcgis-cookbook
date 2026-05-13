@@ -126,6 +126,14 @@ if ($customZip) {
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
   $customJsonSource = Join-Path $customRoot (("templates\arcgis-webadaptor\11.5\windows\{0}") -f $WebAdaptorJsonName)
+  if (-not (Test-Path $customJsonSource)) {
+    Write-Host (("Expected path '{0}' not found; searching recursively for '{1}' within {2}...") -f $customJsonSource, $WebAdaptorJsonName, $customRoot)
+    $found = Get-ChildItem -Path $customRoot -Filter $WebAdaptorJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
     # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force

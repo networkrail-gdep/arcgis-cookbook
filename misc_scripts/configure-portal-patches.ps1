@@ -113,6 +113,14 @@ if ($customZip) {
 Write-Host "=== Preparing required custom $PortalPatchJsonName ==="
 
 $customJsonSource = Join-Path $customRoot ("templates\arcgis-portal\11.5\windows\$PortalPatchJsonName")
+if (-not (Test-Path $customJsonSource)) {
+  Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$PortalPatchJsonName' within $customRoot..."
+  $found = Get-ChildItem -Path $customRoot -Filter $PortalPatchJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($found) {
+    $customJsonSource = $found.FullName
+  }
+}
+
 if (Test-Path $customJsonSource) {
   Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Copied required custom patch template from $customJsonSource to $templateJsonTarget"
