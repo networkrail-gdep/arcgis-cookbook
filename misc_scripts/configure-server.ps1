@@ -139,13 +139,29 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
+  # Log the extracted structure to aid debugging.
+  Write-Host "=== Extracted custom-cookbook top-level contents ==="
+  Get-ChildItem -Path $customRoot -ErrorAction SilentlyContinue | ForEach-Object { Write-Host ("  {0}" -f $_.Name) }
+
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$ServerJsonName")
+  if (-not (Test-Path $customJsonSource)) {
+    # Fallback: search recursively in case zip has an extra root folder level.
+    Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$ServerJsonName' within $customRoot..."
+    $found = Get-ChildItem -Path $customRoot -Filter $ServerJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      Write-Host "Found '$ServerJsonName' at '$($found.FullName)' via recursive search."
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
     # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
     Remove-BOM -FilePath $templateJsonTarget
     Write-Host "Copied required custom template from $customJsonSource to $templateJsonTarget"
   } else {
+    Write-Host "=== All JSON files found under custom-cookbook ==="
+    Get-ChildItem -Path $customRoot -Filter '*.json' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host ("  {0}" -f $_.FullName) }
     Write-Error "Required custom template '$ServerJsonName' not found at $customJsonSource. Failing execution."
     try { Stop-Transcript | Out-Null } catch {}
     exit 1
