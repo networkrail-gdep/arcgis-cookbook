@@ -41,7 +41,7 @@
             "object_store": "",
             "authorization_file": "C:\\Software\\AuthorizationFiles\\11.5\\Portal.json",
             "user_license_type_id": "creatorUT",
-            "root_cert": "C:\\Software\\Certificates\\devgis.pfx",
+            "root_cert": "C:\\Software\\Certificates\\devgis_export.pfx",
             "root_cert_alias": "devgis",
             "system_properties": {
                 "privatePortalURL": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
