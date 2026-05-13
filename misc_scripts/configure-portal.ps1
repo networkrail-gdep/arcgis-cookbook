@@ -190,6 +190,54 @@ try {
 $runAsUser = [string]$portalConfig.arcgis.run_as_user
 $runAsPassword = [string]$portalConfig.arcgis.run_as_password
 
+# Validate and normalize root certificate path before Cinc run.
+$rootCertPath = [string]$portalConfig.arcgis.portal.root_cert
+$rootCertAlias = [string]$portalConfig.arcgis.portal.root_cert_alias
+$certRepoDir = [string]$portalConfig.arcgis.repository.certificates
+
+if (-not [string]::IsNullOrWhiteSpace($rootCertPath) -and -not [string]::IsNullOrWhiteSpace($rootCertAlias)) {
+  if (-not (Test-Path $rootCertPath)) {
+    if ([string]::IsNullOrWhiteSpace($certRepoDir)) {
+      $certRepoDir = Split-Path -Path $rootCertPath -Parent
+    }
+
+    $resolvedRootCert = $null
+    if (-not [string]::IsNullOrWhiteSpace($certRepoDir) -and (Test-Path $certRepoDir)) {
+      $configuredBase = [System.IO.Path]::GetFileNameWithoutExtension($rootCertPath)
+
+      $candidates = @()
+      if (-not [string]::IsNullOrWhiteSpace($configuredBase)) {
+        $candidates += Get-ChildItem -Path $certRepoDir -Filter ($configuredBase + '_export*.pfx') -File -ErrorAction SilentlyContinue
+        $candidates += Get-ChildItem -Path $certRepoDir -Filter ($configuredBase + '*.pfx') -File -ErrorAction SilentlyContinue
+      }
+      $candidates += Get-ChildItem -Path $certRepoDir -Filter ('*' + $rootCertAlias + '*.pfx') -File -ErrorAction SilentlyContinue
+
+      $resolvedRootCert = $candidates |
+        Sort-Object -Property LastWriteTimeUtc -Descending |
+        Select-Object -First 1
+    }
+
+    if ($resolvedRootCert) {
+      $portalConfig.arcgis.portal.root_cert = $resolvedRootCert.FullName
+      $jsonOut = $portalConfig | ConvertTo-Json -Depth 64
+      $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+      [System.IO.File]::WriteAllText($templateJsonTarget, $jsonOut, $utf8NoBom)
+      Write-Host ("Resolved missing root_cert to '{0}' based on alias '{1}'." -f $resolvedRootCert.FullName, $rootCertAlias)
+    }
+    else {
+      $availablePfx = @()
+      if (-not [string]::IsNullOrWhiteSpace($certRepoDir) -and (Test-Path $certRepoDir)) {
+        $availablePfx = Get-ChildItem -Path $certRepoDir -Filter '*.pfx' -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+      }
+
+      $availableText = if ($availablePfx.Count -gt 0) { ($availablePfx -join ', ') } else { 'none' }
+      Write-Error ("Configured root_cert '{0}' not found. No matching .pfx was found in '{1}'. Available .pfx files: {2}" -f $rootCertPath, $certRepoDir, $availableText)
+      try { Stop-Transcript | Out-Null } catch {}
+      exit 1
+    }
+  }
+}
+
 if ([string]::IsNullOrWhiteSpace($runAsUser)) {
   Write-Error "arcgis.run_as_user is missing or empty in $templateJsonTarget. Failing execution."
   try { Stop-Transcript | Out-Null } catch {}
