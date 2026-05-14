@@ -1,0 +1,21 @@
+{
+    "arcgis": {
+        "server": {
+            "private_url": "https://azarcfeddev.corp.ukrail.net:6443/arcgis",
+            "web_context_url": "https://devgis.networkrail.co.uk/server",
+            "admin_username": "arcgisadmin",
+            "admin_password": "nXTB*Z[6ab}(mTCX",
+            "is_hosting": false
+        },
+        "portal": {
+            "private_url": "https://azarcprtldev.corp.ukrail.net:7443/arcgis",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
+            "root_cert": "",
+            "root_cert_alias": ""
+        }
+    },
+    "run_list": [
+        "recipe[arcgis-enterprise::federation]"
+    ]
+}

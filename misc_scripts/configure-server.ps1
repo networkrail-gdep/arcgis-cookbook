@@ -1,5 +1,7 @@
 param(
-  # Name of the server JSON file under templates\arcgis-server\11.5\windows (e.g. 'arcgis-server.json')
+  # Server JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-server-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  # Examples: arcgis-server.json, arcgis-server-federation-vm.json, arcgis-server-imagehosting-vm.json
   [string]$ServerJsonName = 'arcgis-server.json'
 )
 
@@ -9,6 +11,23 @@ $chefCache        = 'C:\chef\cache'
 $chefDownloadRoot = 'C:\Users'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
 $customZipPattern = 'arcgis-cookbook*.zip'
+
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
+    }
+  }
+}
 
 if ($ServerJsonName.ToLower().EndsWith('.json')) {
   $serverBaseName = [System.IO.Path]::GetFileNameWithoutExtension($ServerJsonName)
@@ -108,17 +127,7 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host "=== Creating base $ServerJsonName from Esri template ==="
-
-$templateJsonSource = Join-Path $chefBase $templateJsonSourceRel
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Write-Host "Copied Esri Server template to $templateJsonTarget"
-} else {
-  Write-Host "Esri server template not found at $templateJsonSource; continuing without it."
-}
-
-Write-Host "=== Overlaying custom $ServerJsonName from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Preparing required custom $ServerJsonName from arcgis-cookbook zip ==="
 
 # Look anywhere under $chefDownloadRoot for the custom arcgis-cookbook zip
 $customZip = Get-ChildItem -Path $chefDownloadRoot -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -130,15 +139,37 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
+  # Log the extracted structure to aid debugging.
+  Write-Host "=== Extracted custom-cookbook top-level contents ==="
+  Get-ChildItem -Path $customRoot -ErrorAction SilentlyContinue | ForEach-Object { Write-Host ("  {0}" -f $_.Name) }
+
   $customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$ServerJsonName")
+  if (-not (Test-Path $customJsonSource)) {
+    # Fallback: search recursively in case zip has an extra root folder level.
+    Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$ServerJsonName' within $customRoot..."
+    $found = Get-ChildItem -Path $customRoot -Filter $ServerJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      Write-Host "Found '$ServerJsonName' at '$($found.FullName)' via recursive search."
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
+    # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
-    Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
+    Remove-BOM -FilePath $templateJsonTarget
+    Write-Host "Copied required custom template from $customJsonSource to $templateJsonTarget"
   } else {
-    Write-Host "Custom $ServerJsonName not found in $customRoot; keeping Esri template."
+    Write-Host "=== All JSON files found under custom-cookbook ==="
+    Get-ChildItem -Path $customRoot -Filter '*.json' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host ("  {0}" -f $_.FullName) }
+    Write-Error "Required custom template '$ServerJsonName' not found at $customJsonSource. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
   }
 } else {
-  Write-Host "No custom arcgis-cookbook*.zip found under $chefDownloadRoot; using Esri template only."
+  Write-Error "No custom arcgis-cookbook*.zip found under $chefDownloadRoot. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to configure ArcGIS Server ==="

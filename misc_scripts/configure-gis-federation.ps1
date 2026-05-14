@@ -1,5 +1,7 @@
 param(
-  # Name of the federation JSON file under templates\arcgis-server\11.5\windows (e.g. 'gis-server-federation.json', 'imagehosting-federation.json')
+  # Federation JSON template name. Pipeline passes environment-suffixed names (e.g., gis-server-federation-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  # Examples: gis-server-federation.json, imagehosting-federation.json, gis-hosting-federation.json
   [string]$FederationJsonName = 'gis-server-federation.json'
 )
 
@@ -8,6 +10,23 @@ $chefBase         = 'C:\chef'
 $chefCache        = 'C:\chef\cache'
 $chefDownloadRoot = 'C:\Users'
 $esriZipName      = 'arcgis-5.2.0-cookbooks.zip'
+
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
+    }
+  }
+}
 
 # Derive paths and marker names from the federation JSON name
 if ($FederationJsonName.ToLower().EndsWith('.json')) {
@@ -125,6 +144,14 @@ if ($customZip) {
 Write-Host "=== Preparing $FederationJsonName ==="
 
 $customJsonSource = Join-Path $customRoot ("templates\arcgis-server\11.5\windows\$FederationJsonName")
+if (-not (Test-Path $customJsonSource)) {
+  Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$FederationJsonName' within $customRoot..."
+  $found = Get-ChildItem -Path $customRoot -Filter $FederationJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($found) {
+    $customJsonSource = $found.FullName
+  }
+}
+
 if (Test-Path $customJsonSource) {
   Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
   Write-Host "Copied custom federation template to $templateJsonTarget from $customJsonSource"

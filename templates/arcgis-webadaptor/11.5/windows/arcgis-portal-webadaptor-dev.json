@@ -1,0 +1,35 @@
+{
+    "arcgis": {
+        "version": "11.5",
+        "run_as_user": "gdepadmin",
+        "run_as_password": "w(#IROTWwPt<!Vl}",
+        "configure_windows_firewall": true,
+        "repository": {
+            "archives": "C:\\Software\\Archives",
+            "setups": "C:\\Software\\Setups"
+        },
+        "iis": {
+            "keystore_file": "C:\\Software\\keystore.pfx",
+            "keystore_password": "password5",
+            "replace_https_binding": true
+        },
+        "portal": {
+            "url": "https://azarcprtldev.corp.ukrail.net:7443/portal",
+            "wa_url": "https://azarcprtldev.corp.ukrail.net/portal",
+            "admin_username": "portaladmin",
+            "admin_password": "nXTBZ6abmTCX2o26",
+            "wa_name": "portal"
+        },
+        "web_adaptor": {
+            "install_system_requirements": true,
+            "dotnet_setup_path": "C:\\Software\\Archives\\dotnet-hosting-8.0.21-win.exe",
+            "web_deploy_setup_path": "C:\\Software\\Archives\\webdeploy_amd64_en-US.msi",
+            "reindex_portal_content": false
+        }
+    },
+    "run_list": [
+        "recipe[arcgis-enterprise::system]",
+        "recipe[esri-iis]",
+        "recipe[arcgis-enterprise::portal_wa]"
+    ]
+}

@@ -1,3 +1,9 @@
+param(
+  # Data Store JSON template name. Pipeline passes environment-suffixed names (e.g., arcgis-datastore-relational-primary-dev.json for dev).
+  # For manual execution, specify the desired environment variant or use the base name default.
+  [string]$DatastoreJsonName = 'arcgis-datastore-relational-primary.json'
+)
+
 # --- Variables ---
 $chefBase             = 'C:\chef'
 $chefCache            = 'C:\chef\cache'
@@ -8,6 +14,23 @@ $customZipPattern     = 'arcgis-cookbook*.zip'
 $templateJsonTarget   = 'C:\chef\arcgis-datastore.json'
 $datastoreOkMarker    = 'C:\chef\datastore_configured.ok'
 $datastoreTranscript  = 'C:\chef\configure-datastore.transcript.txt'
+
+# Function to remove UTF-8 BOM from a file (Chef JSON parser fails with BOM)
+function Remove-BOM {
+  param([string]$FilePath)
+  if (Test-Path $FilePath) {
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    # Remove UTF-8 BOM if present (first 3 bytes: EF BB BF)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+      if ($bytes.Length -gt 3) {
+        [System.IO.File]::WriteAllBytes($FilePath, $bytes[3..($bytes.Length - 1)])
+      }
+      else {
+        [System.IO.File]::WriteAllBytes($FilePath, [byte[]]@())
+      }
+    }
+  }
+}
 
 # Start a transcript so background runs write to a log file.
 try {
@@ -90,17 +113,7 @@ if (-not (Test-Path $cookbooksDir)) {
   return
 }
 
-Write-Host "=== Creating base arcgis-datastore.json from Esri template ==="
-
-$templateJsonSource = Join-Path $chefBase 'templates\arcgis-datastore\11.5\windows\arcgis-datastore-relational-primary.json'
-if (Test-Path $templateJsonSource) {
-  Copy-Item -Path $templateJsonSource -Destination $templateJsonTarget -Force
-  Write-Host "Copied Esri Data Store template to $templateJsonTarget"
-} else {
-  Write-Host "Esri datastore template not found at $templateJsonSource; continuing without it."
-}
-
-Write-Host "=== Overlaying custom arcgis-datastore.json from arcgis-cookbook zip (if present) ==="
+Write-Host "=== Preparing required custom arcgis-datastore.json from arcgis-cookbook zip ==="
 
 $customZip = Get-ChildItem -Path $datastoreCookbookDir -Filter $customZipPattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($customZip) {
@@ -111,15 +124,29 @@ if ($customZip) {
 
   Expand-Archive -Path $customZip.FullName -DestinationPath $customRoot -Force
 
-  $customJsonSource = Join-Path $customRoot 'templates\arcgis-datastore\11.5\windows\arcgis-datastore-relational-primary.json'
+  $customJsonSource = Join-Path $customRoot ("templates\arcgis-datastore\11.5\windows\{0}" -f $DatastoreJsonName)
+  if (-not (Test-Path $customJsonSource)) {
+    Write-Host "Expected path '$customJsonSource' not found; searching recursively for '$DatastoreJsonName' within $customRoot..."
+    $found = Get-ChildItem -Path $customRoot -Filter $DatastoreJsonName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found) {
+      $customJsonSource = $found.FullName
+    }
+  }
+
   if (Test-Path $customJsonSource) {
+    # Always use the custom JSON by copying it to the fixed Chef run-list path.
     Copy-Item -Path $customJsonSource -Destination $templateJsonTarget -Force
-    Write-Host "Overrode $templateJsonTarget with custom template from $customJsonSource"
+    Remove-BOM -FilePath $templateJsonTarget
+    Write-Host "Copied required custom template from $customJsonSource to $templateJsonTarget"
   } else {
-    Write-Host "Custom arcgis-datastore-relational-primary.json not found in $customRoot; keeping Esri template."
+    Write-Error "Required custom template '$DatastoreJsonName' not found at $customJsonSource. Failing execution."
+    try { Stop-Transcript | Out-Null } catch {}
+    exit 1
   }
 } else {
-  Write-Host "No custom arcgis-cookbook*.zip found under $datastoreCookbookDir; using Esri template only."
+  Write-Error "No custom arcgis-cookbook*.zip found under $datastoreCookbookDir. Failing execution."
+  try { Stop-Transcript | Out-Null } catch {}
+  exit 1
 }
 
 Write-Host "=== Running Cinc to configure Data Store ==="
